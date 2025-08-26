@@ -1818,100 +1818,68 @@
                     };
                 }
                 
-                // Fetch content for rendered files with improved rate limiting
-                const files = [];
-                let totalSize = 0;
-                let consecutiveErrors = 0;
-                const maxConsecutiveErrors = 3;
-                
-                for (let i = 0; i < categorizedFiles.rendered.length; i++) {
-                    const fileInfo = categorizedFiles.rendered[i];
-                    
-                    try {
-                        // Add delay before each request, increasing with consecutive errors
-                        const baseDelay = 200; // Base delay in ms
-                        const errorDelay = consecutiveErrors * 500; // Additional delay per consecutive error
-                        await new Promise(resolve => setTimeout(resolve, baseDelay + errorDelay));
-                        
-                        const contentResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${fileInfo.path}`, { headers });
-                        
-                        if (contentResponse.ok) {
-                            const contentData = await contentResponse.json();
-                            const content = atob(contentData.content);
-                            
-                            const file = {
-                                path: fileInfo.path,
-                                size: fileInfo.size || content.length,
-                                content: content,
-                                sha: fileInfo.sha
-                            };
-                            
-                            files.push(file);
-                            totalSize += file.size;
-                            consecutiveErrors = 0; // Reset error count on success
-                            
-                        } else if (contentResponse.status === 403) {
-                            consecutiveErrors++;
-                            console.warn(`Rate limit hit while fetching ${fileInfo.path} (${consecutiveErrors} consecutive errors)`);
-                            
-                            // Only add to failed files if it's NOT an ignored file that somehow got through
-                            const recheck = categorizeFile(fileInfo.path, fileInfo.size);
-                            if (recheck.category !== 'ignored') {
-                                categorizedFiles.failed.push({
-                                    ...fileInfo,
-                                    category: { include: false, reason: 'rate_limit', category: 'failed' }
-                                });
-                            }
-                            
-                            // If we hit too many consecutive errors, stop processing
-                            if (consecutiveErrors >= maxConsecutiveErrors) {
-                                console.warn(`Too many consecutive rate limit errors (${consecutiveErrors}). Stopping to prevent further issues.`);
-                                break;
-                            }
-                        } else {
-                            consecutiveErrors++;
-                            console.warn(`HTTP ${contentResponse.status} while fetching ${fileInfo.path}`);
-                            
-                            // Only add to failed files if it's NOT an ignored file
-                            const recheck = categorizeFile(fileInfo.path, fileInfo.size);
-                            if (recheck.category !== 'ignored') {
-                                categorizedFiles.failed.push({
-                                    ...fileInfo,
-                                    category: { include: false, reason: `http_${contentResponse.status}`, category: 'failed' }
-                                });
-                            }
+                // Helper function to fetch file content with multiple fallback methods
+                async function fetchFileContent(fileInfo, repoInfo) {
+                    const methods = [
+                        // Method 1: Raw GitHub content (no rate limit for public repos)
+                        {
+                            name: 'raw',
+                            fetch: () => fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${repoInfo.default_branch}/${fileInfo.path}`)
+                        },
+                        // Method 2: Git Blob API (more efficient than Contents API)
+                        {
+                            name: 'blob',
+                            fetch: () => fetch(`https://api.github.com/repos/${owner}/${repo}/git/blobs/${fileInfo.sha}`, { headers })
+                        },
+                        // Method 3: Contents API (fallback)
+                        {
+                            name: 'contents',
+                            fetch: () => fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${fileInfo.path}`, { headers })
                         }
-                    } catch (error) {
-                        consecutiveErrors++;
-                        console.warn(`Failed to fetch content for ${fileInfo.path}:`, error);
-                        
-                        // Only add to failed files if it's NOT an ignored file
-                        const recheck = categorizeFile(fileInfo.path, fileInfo.size);
-                        if (recheck.category !== 'ignored') {
-                            categorizedFiles.failed.push({
-                                ...fileInfo,
-                                category: { include: false, reason: 'fetch_error', category: 'failed' }
-                            });
+                    ];
+
+                    for (const method of methods) {
+                        try {
+                            const response = await method.fetch();
+                            
+                            if (response.ok) {
+                                let content;
+                                
+                                if (method.name === 'raw') {
+                                    content = await response.text();
+                                } else if (method.name === 'blob') {
+                                    const data = await response.json();
+                                    content = data.encoding === 'base64' ? atob(data.content) : data.content;
+                                } else { // contents
+                                    const data = await response.json();
+                                    content = atob(data.content);
+                                }
+                                
+                                return { content, method: method.name };
+                            }
+                        } catch (error) {
+                            console.warn(`Failed to fetch ${fileInfo.path} using ${method.name}:`, error.message);
+                            continue;
                         }
                     }
                     
-                    processedFiles++;
-                    updateProgress(processedFiles, totalFilesToProcess);
+                    throw new Error(`All methods failed for ${fileInfo.path}`);
                 }
-                
-                // FINAL DEBUG: Check if any ignored files made it to the final results
-                console.error('🔍 FINAL FILES COUNT:', files.length);
-                const badFiles = files.filter(f => f.path === '.gitattributes' || f.path.endsWith('/.gitattributes'));
-                if (badFiles.length > 0) {
-                    console.error('🚨 ERROR: .gitattributes found in final results!', badFiles);
-                }
+
+                // Store file metadata without content for lazy loading
+                const filesList = categorizedFiles.rendered.map(fileInfo => ({
+                    path: fileInfo.path,
+                    size: fileInfo.size,
+                    sha: fileInfo.sha,
+                    content: null // Will be loaded lazily when needed
+                }));
                 
                 return {
                     repoInfo,
-                    files,
+                    files: filesList,
                     categorizedFiles,
                     allFiles,
-                    totalSize,
+                    totalSize: categorizedFiles.rendered.reduce((sum, file) => sum + (file.size || 0), 0),
                     treeStructure: await generateTreeStructure(treeData.tree)
                 };
                 
@@ -1999,18 +1967,31 @@
             return html;
         }
 
-        // Generate CXML format for LLM
-        function generateCXML(files) {
+        // Generate CXML format for LLM (with lazy loading support)
+        async function generateCXML(files) {
             let cxml = '<documents>\n';
             
-            files.forEach((file, index) => {
+            for (let index = 0; index < files.length; index++) {
+                const file = files[index];
                 cxml += `<document index="${index + 1}">\n`;
                 cxml += `<source>${file.path}</source>\n`;
                 cxml += '<document_content>\n';
-                cxml += file.content;
+                
+                // Load content if not already loaded
+                if (!file.content && file.sha) {
+                    try {
+                        file.content = await fetchSingleFileContent(file);
+                        // Cache the content
+                        filesContentCache.set(file.path, file.content);
+                    } catch (error) {
+                        file.content = `[Error loading file: ${error.message}]`;
+                    }
+                }
+                
+                cxml += file.content || '[Content not available]';
                 cxml += '\n</document_content>\n';
                 cxml += '</document>\n';
-            });
+            }
             
             cxml += '</documents>';
             return cxml;
@@ -2374,11 +2355,19 @@
             
             // Generate CXML for LLM view
             if (repositoryData.files) {
-                const cxml = generateCXML(repositoryData.files);
-                const llmTextarea = document.getElementById('llm-textarea');
-                if (llmTextarea) {
-                    llmTextarea.value = cxml;
-                }
+                // Generate CXML asynchronously and update when ready
+                generateCXML(repositoryData.files).then(cxml => {
+                    const llmTextarea = document.getElementById('llm-textarea');
+                    if (llmTextarea) {
+                        llmTextarea.value = cxml;
+                    }
+                }).catch(error => {
+                    console.error('Error generating CXML:', error);
+                    const llmTextarea = document.getElementById('llm-textarea');
+                    if (llmTextarea) {
+                        llmTextarea.value = 'Error generating LLM format: ' + error.message;
+                    }
+                });
             }
         }
 
@@ -2560,6 +2549,112 @@
             });
         }
 
+        // Global variables for lazy loading
+        let filesContentCache = new Map();
+        let pendingFileRequests = new Map();
+
+        // Fetch single file content with optimized methods
+        async function fetchSingleFileContent(fileInfo) {
+            const repoInfo = repositoryData.repoInfo;
+            const owner = repoInfo.owner.login;
+            const repo = repoInfo.name;
+            const headers = getGitHubHeaders();
+            
+            const methods = [
+                // Method 1: Raw GitHub content (no rate limit for public repos)
+                {
+                    name: 'raw',
+                    fetch: () => fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${repoInfo.default_branch}/${fileInfo.path}`)
+                },
+                // Method 2: Git Blob API (more efficient than Contents API)
+                {
+                    name: 'blob',
+                    fetch: () => fetch(`https://api.github.com/repos/${owner}/${repo}/git/blobs/${fileInfo.sha}`, { headers })
+                },
+                // Method 3: Contents API (fallback)
+                {
+                    name: 'contents',
+                    fetch: () => fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${fileInfo.path}`, { headers })
+                }
+            ];
+
+            for (const method of methods) {
+                try {
+                    const response = await method.fetch();
+                    
+                    if (response.ok) {
+                        let content;
+                        
+                        if (method.name === 'raw') {
+                            content = await response.text();
+                        } else if (method.name === 'blob') {
+                            const data = await response.json();
+                            content = data.encoding === 'base64' ? atob(data.content) : data.content;
+                        } else { // contents
+                            const data = await response.json();
+                            content = atob(data.content);
+                        }
+                        
+                        console.log(`✅ Fetched ${fileInfo.path} using ${method.name} method`);
+                        return content;
+                    }
+                } catch (error) {
+                    console.warn(`Failed to fetch ${fileInfo.path} using ${method.name}:`, error.message);
+                    continue;
+                }
+            }
+            
+            throw new Error(`All methods failed for ${fileInfo.path}`);
+        }
+
+        // Lazy load file content when needed
+        async function loadFileContentLazy(section, fileInfo) {
+            const contentDiv = section.querySelector('.file-content');
+            const lazyDiv = contentDiv.querySelector('.lazy-content');
+            
+            if (!lazyDiv) return;
+            
+            try {
+                // Check cache first
+                if (filesContentCache.has(fileInfo.path)) {
+                    const cachedContent = filesContentCache.get(fileInfo.path);
+                    contentDiv.innerHTML = renderFileContent(cachedContent, fileInfo.path);
+                    return;
+                }
+                
+                // Check if request is already pending
+                if (pendingFileRequests.has(fileInfo.path)) {
+                    const content = await pendingFileRequests.get(fileInfo.path);
+                    contentDiv.innerHTML = renderFileContent(content, fileInfo.path);
+                    return;
+                }
+                
+                // Create new request
+                const requestPromise = fetchSingleFileContent(fileInfo);
+                pendingFileRequests.set(fileInfo.path, requestPromise);
+                
+                const content = await requestPromise;
+                
+                // Cache the content
+                filesContentCache.set(fileInfo.path, content);
+                pendingFileRequests.delete(fileInfo.path);
+                
+                // Update the file object with loaded content
+                const fileIndex = repositoryData.files.findIndex(f => f.path === fileInfo.path);
+                if (fileIndex >= 0) {
+                    repositoryData.files[fileIndex].content = content;
+                }
+                
+                // Render the content
+                contentDiv.innerHTML = renderFileContent(content, fileInfo.path);
+                
+            } catch (error) {
+                console.error(`Failed to load ${fileInfo.path}:`, error);
+                contentDiv.innerHTML = `<pre class="error">Failed to load file: ${error.message}</pre>`;
+                pendingFileRequests.delete(fileInfo.path);
+            }
+        }
+
         // Enhanced file sections with better navigation and pagination
         function generateEnhancedFileSections() {
             const filesContainer = document.getElementById('files-container');
@@ -2599,10 +2694,36 @@
                 const content = document.createElement('div');
                 content.className = 'file-content';
                 
-                try {
-                    content.innerHTML = renderFileContent(file.content, file.path);
-                } catch (error) {
-                    content.innerHTML = `<pre class="error">Error rendering file: ${error.message}</pre>`;
+                // Add lazy loading for file content
+                if (file.content) {
+                    // Content already loaded
+                    try {
+                        content.innerHTML = renderFileContent(file.content, file.path);
+                    } catch (error) {
+                        content.innerHTML = `<pre class="error">Error rendering file: ${error.message}</pre>`;
+                    }
+                } else {
+                    // Add placeholder and lazy load
+                    content.innerHTML = `
+                        <div class="lazy-content" data-file-path="${file.path}" data-file-sha="${file.sha}">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                Loading ${file.path}...
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Load content when section comes into view
+                    const observer = new IntersectionObserver(async (entries) => {
+                        entries.forEach(async (entry) => {
+                            if (entry.isIntersecting) {
+                                observer.unobserve(entry.target);
+                                await loadFileContentLazy(entry.target, file);
+                            }
+                        });
+                    }, { threshold: 0.1 });
+                    
+                    observer.observe(section);
                 }
                 
                 // Add back to top link
