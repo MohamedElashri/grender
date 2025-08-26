@@ -1969,21 +1969,14 @@
         // Sort files with README.md first, then by directory structure
         function sortFilesByStructure(files) {
             return files.sort((a, b) => {
-                // README.md always comes first regardless of location
-                const aIsReadme = a.path.toLowerCase().endsWith('readme.md');
-                const bIsReadme = b.path.toLowerCase().endsWith('readme.md');
+                // Only root README.md comes first (no slash in path)
+                const aIsRootReadme = a.path.toLowerCase() === 'readme.md';
+                const bIsRootReadme = b.path.toLowerCase() === 'readme.md';
                 
-                if (aIsReadme && !bIsReadme) return -1;
-                if (!aIsReadme && bIsReadme) return 1;
-                if (aIsReadme && bIsReadme) {
-                    // If both are README.md files, prioritize root level
-                    const aIsRoot = !a.path.includes('/');
-                    const bIsRoot = !b.path.includes('/');
-                    if (aIsRoot && !bIsRoot) return -1;
-                    if (!aIsRoot && bIsRoot) return 1;
-                }
+                if (aIsRootReadme && !bIsRootReadme) return -1;
+                if (!aIsRootReadme && bIsRootReadme) return 1;
                 
-                // For non-README files, sort by directory structure
+                // For all other files (including non-root README.md), sort by directory structure
                 const aParts = a.path.split('/');
                 const bParts = b.path.split('/');
                 
