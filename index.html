@@ -973,6 +973,325 @@
             color: var(--text-primary);
             font-size: 0.9rem;
         }
+
+        /* Branch/Tag Navigation Styles */
+        .branch-controls {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .branch-controls.show {
+            display: block;
+        }
+
+        .branch-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .branch-selector label {
+            color: var(--text-secondary);
+            font-weight: 500;
+            min-width: 80px;
+        }
+
+        .branch-selector select {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-primary);
+            border-radius: 6px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            min-width: 200px;
+            cursor: pointer;
+        }
+
+        .branch-selector select:focus {
+            outline: 2px solid var(--accent-primary);
+            outline-offset: 2px;
+        }
+
+        .commit-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        .commit-sha-link {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+        }
+
+        .commit-sha-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Search & Filter Styles */
+        .search-controls {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .search-controls.show {
+            display: block;
+        }
+
+        .search-input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-primary);
+            border-radius: 6px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            min-width: 200px;
+        }
+
+        .search-input:focus {
+            outline: 2px solid var(--accent-primary);
+            outline-offset: 2px;
+        }
+
+        .search-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .search-btn:hover:not(:disabled) {
+            background: var(--accent-secondary);
+            transform: translateY(-1px);
+        }
+
+        .search-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .search-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .search-filters label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .search-filters input[type="checkbox"] {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border-primary);
+            border-radius: 3px;
+            background: var(--bg-primary);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .search-filters input[type="checkbox"]:checked {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .search-filters input[type="checkbox"]:checked::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+            position: absolute;
+            top: -2px;
+            left: 2px;
+        }
+
+        .search-options {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-options label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .search-results {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-secondary);
+        }
+
+        .search-results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .search-results-count {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .clear-search-btn {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .clear-search-btn:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .search-result-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .search-result-item:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-1px);
+        }
+
+        .search-result-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .search-result-file {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .search-result-matches {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .search-result-preview {
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-size: 0.85rem;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            padding: 0.75rem;
+            line-height: 1.4;
+            overflow-x: auto;
+        }
+
+        .search-highlight {
+            background: rgba(255, 255, 0, 0.3);
+            color: var(--text-primary);
+            font-weight: bold;
+            padding: 0.1rem 0.2rem;
+            border-radius: 2px;
+        }
+
+        /* File type filter badges */
+        .file-type-filters {
+            display: flex;
+            gap: 0.5rem;
+            margin: 0.5rem 0;
+            flex-wrap: wrap;
+        }
+
+        .file-type-badge {
+            padding: 0.25rem 0.5rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .file-type-badge:hover {
+            background: var(--bg-secondary);
+        }
+
+        .file-type-badge.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        /* Advanced controls toggle */
+        .advanced-controls-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 1rem 0;
+            justify-content: center;
+        }
+
+        .toggle-advanced-btn {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-advanced-btn:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .toggle-advanced-btn.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
     </style>
 </head>
 <body>
@@ -1033,6 +1352,80 @@
                         <span class="stat">Files: <strong id="file-count">0</strong></span>
                         <span class="stat">Size: <strong id="total-size">0 B</strong></span>
                         <span class="stat">Language: <strong id="main-language">-</strong></span>
+                    </div>
+                </div>
+
+                <!-- Advanced Controls Toggle -->
+                <div class="advanced-controls-toggle" id="advanced-controls-toggle" style="display: none;">
+                    <button class="toggle-advanced-btn" onclick="toggleAdvancedControls()" id="toggle-advanced-btn">
+                        ⚙️ Advanced Controls
+                    </button>
+                </div>
+
+                <!-- Branch/Tag Navigation -->
+                <div class="branch-controls" id="branch-controls">
+                    <div class="branch-selector">
+                        <label for="branch-select">Branch/Tag:</label>
+                        <select id="branch-select" onchange="switchBranchOrTag()">
+                            <option value="">Loading...</option>
+                        </select>
+                    </div>
+                    <div class="commit-info" id="commit-info">
+                        <span>Latest commit:</span>
+                        <a href="#" id="commit-link" class="commit-sha-link" target="_blank"></a>
+                        <span id="commit-message"></span>
+                    </div>
+                </div>
+
+                <!-- Search & Filter Controls -->
+                <div class="search-controls" id="search-controls">
+                    <div class="search-input-group">
+                        <input type="text" 
+                               class="search-input" 
+                               id="search-input" 
+                               placeholder="Search in file names and content..." 
+                               onkeyup="handleSearchInput(event)">
+                        <button class="search-btn" onclick="performSearch()" id="search-btn">
+                            🔍 Search
+                        </button>
+                    </div>
+                    
+                    <div class="search-filters">
+                        <label>
+                            <input type="checkbox" id="filter-filenames" checked>
+                            File names
+                        </label>
+                        <label>
+                            <input type="checkbox" id="filter-content" checked>
+                            File content
+                        </label>
+                        <label>
+                            <input type="checkbox" id="filter-code">
+                            Code files only
+                        </label>
+                    </div>
+                    
+                    <div class="search-options">
+                        <label>
+                            <input type="checkbox" id="regex-search">
+                            Regular expressions
+                        </label>
+                        <label>
+                            <input type="checkbox" id="case-sensitive">
+                            Case sensitive
+                        </label>
+                    </div>
+                    
+                    <div class="file-type-filters" id="file-type-filters">
+                        <!-- File type badges will be populated dynamically -->
+                    </div>
+                    
+                    <div class="search-results" id="search-results" style="display: none;">
+                        <div class="search-results-header">
+                            <span class="search-results-count" id="search-results-count"></span>
+                            <button class="clear-search-btn" onclick="clearSearch()">Clear Search</button>
+                        </div>
+                        <div id="search-results-list"></div>
                     </div>
                 </div>
 
@@ -2093,7 +2486,7 @@
             return githubPattern.test(url);
         }
 
-        // Main repository rendering function
+        // Main repository rendering function (enhanced)
         async function renderRepository() {
             const repoUrl = document.getElementById('repo-input').value.trim();
             if (!repoUrl) {
@@ -2120,20 +2513,8 @@
                 processedFiles = 0;
                 totalFilesToProcess = 0;
                 
-                const result = await fetchRepositoryContents(repoInfo.owner, repoInfo.repo);
-                
-                if (result.files.length === 0) {
-                    alert('No renderable files found in this repository (only binary files or files too large).');
-                    return;
-                }
-                
-                repositoryData = result;
-                
-                // Update UI with results
-                updateRepositoryUI();
-                
-                // Show results
-                document.getElementById('results-container').classList.add('show');
+                // Use enhanced rendering with branch support
+                await renderRepositoryWithBranch(repoUrl, null); // null means use default branch
                 
             } catch (error) {
                 const errorMessage = handleApiError(error, 'Repository rendering');
@@ -2370,7 +2751,7 @@
             }
             
             // Generate enhanced file tree with directory structure
-            generateEnhancedFileTree();
+            generateFileTree();
             
             // Generate file sections with improved navigation
             generateEnhancedFileSections();
@@ -2399,97 +2780,8 @@
             }
         }
 
-        // Generate file tree with better organization
+        // Enhanced file tree with directory grouping  
         function generateFileTree() {
-            const fileTree = document.getElementById('file-tree');
-            fileTree.innerHTML = '';
-            
-            // Sort files by directory structure
-            const sortedFiles = [...repositoryData.files].sort((a, b) => {
-                const aDirs = a.path.split('/').length;
-                const bDirs = b.path.split('/').length;
-                if (aDirs !== bDirs) return aDirs - bDirs;
-                return a.path.localeCompare(b.path);
-            });
-            
-            sortedFiles.forEach(file => {
-                const li = document.createElement('li');
-                const a = document.createElement('a');
-                const fileId = file.path.replace(/[^a-zA-Z0-9-_]/g, '-');
-                a.href = `#file-${fileId}`;
-                a.textContent = file.path;
-                a.title = `${file.path} (${formatBytes(file.size)})`;
-                li.appendChild(a);
-                
-                // Add file size indicator
-                const sizeSpan = document.createElement('span');
-                sizeSpan.className = 'file-size';
-                sizeSpan.textContent = ` (${formatBytes(file.size)})`;
-                sizeSpan.style.color = 'var(--text-muted)';
-                sizeSpan.style.fontSize = '0.8em';
-                li.appendChild(sizeSpan);
-                
-                fileTree.appendChild(li);
-            });
-        }
-
-        // Generate file sections with better formatting
-        function generateFileSections() {
-            const filesContainer = document.getElementById('files-container');
-            filesContainer.innerHTML = '';
-            
-            repositoryData.files.forEach((file, index) => {
-                const section = document.createElement('div');
-                section.className = 'file-section';
-                const fileId = file.path.replace(/[^a-zA-Z0-9-_]/g, '-');
-                section.id = `file-${fileId}`;
-                
-                const header = document.createElement('div');
-                header.className = 'file-header';
-                header.innerHTML = `
-                    <h3>${file.path}</h3>
-                    <span class="file-size">${formatBytes(file.size)} • ${index + 1} of ${repositoryData.files.length}</span>
-                `;
-                
-                const content = document.createElement('div');
-                content.className = 'file-content';
-                
-                try {
-                    content.innerHTML = renderFileContent(file.content, file.path);
-                } catch (error) {
-                    content.innerHTML = `<pre class="error">Error rendering file: ${error.message}</pre>`;
-                }
-                
-                section.appendChild(header);
-                section.appendChild(content);
-                filesContainer.appendChild(section);
-            });
-        }
-
-        // Enhanced error handling
-        function handleApiError(error, context) {
-            console.error(`${context}:`, error);
-            
-            if (error.message.includes('API rate limit')) {
-                const token = document.getElementById('github-token').value.trim();
-                if (!token) {
-                    return 'GitHub API rate limit exceeded. Please add a GitHub Personal Access Token to continue. You can create one at https://github.com/settings/tokens with "public_repo" scope.';
-                } else {
-                    return error.message;
-                }
-            } else if (error.message.includes('Invalid GitHub token')) {
-                return 'Invalid GitHub token. Please check your token and try again. Make sure it has "public_repo" scope.';
-            } else if (error.message.includes('not found')) {
-                return 'Repository not found. Please check the URL and make sure the repository is public.';
-            } else if (error.message.includes('network')) {
-                return 'Network error. Please check your internet connection.';
-            } else {
-                return `Error: ${error.message}`;
-            }
-        }
-
-        // Enhanced file tree with directory grouping
-        function generateEnhancedFileTree() {
             const fileTree = document.getElementById('file-tree');
             if (!fileTree || !repositoryData || !repositoryData.files) return;
             
@@ -2575,6 +2867,319 @@
                     fileTree.appendChild(li);
                 });
             });
+        }
+
+        // Generate file sections with better formatting
+        function generateFileSections() {
+            const filesContainer = document.getElementById('files-container');
+            filesContainer.innerHTML = '';
+            
+            repositoryData.files.forEach((file, index) => {
+                const section = document.createElement('div');
+                section.className = 'file-section';
+                const fileId = file.path.replace(/[^a-zA-Z0-9-_]/g, '-');
+                section.id = `file-${fileId}`;
+                
+                const header = document.createElement('div');
+                header.className = 'file-header';
+                header.innerHTML = `
+                    <h3>${file.path}</h3>
+                    <span class="file-size">${formatBytes(file.size)} • ${index + 1} of ${repositoryData.files.length}</span>
+                `;
+                
+                const content = document.createElement('div');
+                content.className = 'file-content';
+                
+                try {
+                    content.innerHTML = renderFileContent(file.content, file.path);
+                } catch (error) {
+                    content.innerHTML = `<pre class="error">Error rendering file: ${error.message}</pre>`;
+                }
+                
+                section.appendChild(header);
+                section.appendChild(content);
+                filesContainer.appendChild(section);
+            });
+        }
+
+        // Enhanced error handling
+        function handleApiError(error, context) {
+            console.error(`${context}:`, error);
+            
+            if (error.message.includes('API rate limit')) {
+                const token = document.getElementById('github-token').value.trim();
+                if (!token) {
+                    return 'GitHub API rate limit exceeded. Please add a GitHub Personal Access Token to continue. You can create one at https://github.com/settings/tokens with "public_repo" scope.';
+                } else {
+                    return error.message;
+                }
+            } else if (error.message.includes('Invalid GitHub token')) {
+                return 'Invalid GitHub token. Please check your token and try again. Make sure it has "public_repo" scope.';
+            } else if (error.message.includes('not found')) {
+                return 'Repository not found. Please check the URL and make sure the repository is public.';
+            } else if (error.message.includes('network')) {
+                return 'Network error. Please check your internet connection.';
+            } else {
+                return `Error: ${error.message}`;
+            }
+        }
+
+        // Main render repository function (updated to use enhanced features)
+        async function renderRepository() {
+            const repoInput = document.getElementById('repo-input');
+            const repoUrl = repoInput.value.trim();
+            
+            if (!repoUrl) {
+                alert('Please enter a GitHub repository URL');
+                return;
+            }
+            
+            const repoInfo = parseRepoUrl(repoUrl);
+            if (!repoInfo) {
+                alert('Please enter a valid GitHub repository URL (e.g., https://github.com/username/repository)');
+                return;
+            }
+            
+            try {
+                // Check rate limit before starting
+                await checkRateLimit();
+                
+                // Use enhanced rendering with branch support
+                await renderRepositoryWithBranch(repoUrl, null); // null means use default branch
+                
+            } catch (error) {
+                console.error('Error rendering repository:', error);
+                const errorMsg = handleApiError(error, 'Repository rendering');
+                alert(errorMsg);
+            }
+        }
+
+        // Enhanced file tree function with directory grouping
+        function generateFileTree() {
+            const fileTree = document.getElementById('file-tree');
+            if (!fileTree || !repositoryData || !repositoryData.files) return;
+            
+            // Update the sidebar header to show file count
+            const sidebarHeader = fileTree.parentElement.querySelector('h3');
+            if (sidebarHeader) {
+                sidebarHeader.innerHTML = `Files (${repositoryData.files.length}) <small style="color: var(--text-muted); font-weight: normal;">↕️ scroll</small>`;
+            }
+            
+            fileTree.innerHTML = '';
+            
+            // Add "Back to top" link
+            const backToTop = document.createElement('li');
+            backToTop.innerHTML = '<a href="#top" style="color: var(--accent-primary); font-weight: bold;">↑ Back to top</a>';
+            fileTree.appendChild(backToTop);
+            
+            // Group files by directory
+            const filesByDir = {};
+            repositoryData.files.forEach(file => {
+                const parts = file.path.split('/');
+                const dir = parts.length > 1 ? parts.slice(0, -1).join('/') : '';
+                const filename = parts[parts.length - 1];
+                
+                if (!filesByDir[dir]) {
+                    filesByDir[dir] = [];
+                }
+                filesByDir[dir].push({ ...file, filename });
+            });
+            
+            // Sort directories
+            const sortedDirs = Object.keys(filesByDir).sort((a, b) => {
+                if (a === '') return -1; // Root files first
+                if (b === '') return 1;
+                return a.localeCompare(b);
+            });
+            
+            sortedDirs.forEach(dir => {
+                // Add directory header if not root
+                if (dir !== '') {
+                    const dirLi = document.createElement('li');
+                    dirLi.style.fontWeight = 'bold';
+                    dirLi.style.color = 'var(--text-secondary)';
+                    dirLi.style.marginTop = '0.5rem';
+                    dirLi.textContent = `📁 ${dir}/`;
+                    fileTree.appendChild(dirLi);
+                }
+                
+                // Add files in directory
+                filesByDir[dir].sort((a, b) => a.filename.localeCompare(b.filename)).forEach(file => {
+                    const li = document.createElement('li');
+                    li.style.paddingLeft = dir === '' ? '0' : '1rem';
+                    
+                    const a = document.createElement('a');
+                    const fileId = file.path.replace(/[^a-zA-Z0-9-_]/g, '-');
+                    a.href = `#file-${fileId}`;
+                    
+                    // Add icon for different file types
+                    let icon = '';
+                    if (isJupyterNotebook(file.filename)) {
+                        icon = '📓 ';
+                    } else if (isMarkdownFile(file.filename)) {
+                        icon = '📝 ';
+                    } else if (['py', 'js', 'ts', 'java', 'cpp', 'c', 'h'].includes(getFileExtension(file.filename))) {
+                        icon = '⚡ ';
+                    } else if (['json', 'xml', 'yaml', 'yml'].includes(getFileExtension(file.filename))) {
+                        icon = '📋 ';
+                    } else {
+                        icon = '📄 ';
+                    }
+                    
+                    a.textContent = icon + file.filename;
+                    a.title = `${file.path} (${formatBytes(file.size)})`;
+                    li.appendChild(a);
+                    
+                    // Add file size indicator
+                    const sizeSpan = document.createElement('span');
+                    sizeSpan.className = 'file-size';
+                    sizeSpan.textContent = ` (${formatBytes(file.size)})`;
+                    sizeSpan.style.color = 'var(--text-muted)';
+                    sizeSpan.style.fontSize = '0.8em';
+                    li.appendChild(sizeSpan);
+                    
+                    fileTree.appendChild(li);
+                });
+            });
+        }
+
+        // Enhanced file sections with better navigation and pagination
+        function generateEnhancedFileSections() {
+            const filesContainer = document.getElementById('files-container');
+            if (!filesContainer) return;
+            
+            filesContainer.innerHTML = '';
+            
+            if (!repositoryData || !repositoryData.files) return;
+            
+            // Calculate pagination
+            const totalFiles = repositoryData.files.length;
+            const startIndex = (currentPage - 1) * filesPerPage;
+            const endIndex = Math.min(startIndex + filesPerPage, totalFiles);
+            const filesToShow = repositoryData.files.slice(startIndex, endIndex);
+            
+            filesToShow.forEach((file, index) => {
+                const globalIndex = startIndex + index; // Global index across all files
+                const section = document.createElement('div');
+                section.className = 'file-section';
+                const fileId = file.path.replace(/[^a-zA-Z0-9-_]/g, '-');
+                section.id = `file-${fileId}`;
+                
+                const header = document.createElement('div');
+                header.className = 'file-header';
+                header.innerHTML = `
+                    <h3>
+                        <span style="color: var(--text-muted);">${globalIndex + 1}.</span>
+                        ${file.path}
+                    </h3>
+                    <span class="file-size">
+                        ${formatBytes(file.size)} • 
+                        ${isJupyterNotebook(file.path) ? 'NOTEBOOK' : (getFileExtension(file.path).toUpperCase() || 'TXT')} • 
+                        ${globalIndex + 1} of ${totalFiles}
+                    </span>
+                `;
+                
+                const content = document.createElement('div');
+                content.className = 'file-content';
+                
+                // Add lazy loading for file content
+                if (file.content) {
+                    // Content already loaded
+                    try {
+                        content.innerHTML = renderFileContent(file.content, file.path);
+                    } catch (error) {
+                        content.innerHTML = `<pre class="error">Error rendering file: ${error.message}</pre>`;
+                    }
+                } else {
+                    // Add placeholder and lazy load
+                    content.innerHTML = `
+                        <div class="lazy-content" data-file-path="${file.path}" data-file-sha="${file.sha}">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                Loading ${file.path}...
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Load content when section comes into view
+                    const observer = new IntersectionObserver(async (entries) => {
+                        entries.forEach(async (entry) => {
+                            if (entry.isIntersecting) {
+                                observer.unobserve(entry.target);
+                                await loadFileContentLazy(entry.target, file);
+                            }
+                        });
+                    }, { threshold: 0.1 });
+                    
+                    observer.observe(section);
+                }
+                
+                // Add back to top link
+                const backToTop = document.createElement('div');
+                backToTop.className = 'back-top';
+                backToTop.innerHTML = '<a href="#top" style="color: var(--accent-primary); text-decoration: none;">↑ Back to top</a>';
+                backToTop.style.textAlign = 'right';
+                backToTop.style.marginTop = '1rem';
+                backToTop.style.padding = '0.5rem 0';
+                backToTop.style.borderTop = '1px solid var(--border-secondary)';
+                backToTop.style.fontSize = '0.9rem';
+                
+                section.appendChild(header);
+                section.appendChild(content);
+                section.appendChild(backToTop);
+                filesContainer.appendChild(section);
+            });
+            
+            // Update pagination after generating sections
+            updatePagination();
+        }
+
+        // Lazy load file content when needed
+        async function loadFileContentLazy(section, fileInfo) {
+            const contentDiv = section.querySelector('.file-content');
+            const lazyDiv = contentDiv.querySelector('.lazy-content');
+            
+            if (!lazyDiv) return;
+            
+            try {
+                // Check cache first
+                if (filesContentCache.has(fileInfo.path)) {
+                    const cachedContent = filesContentCache.get(fileInfo.path);
+                    contentDiv.innerHTML = renderFileContent(cachedContent, fileInfo.path);
+                    return;
+                }
+                
+                // Check if request is already pending
+                if (pendingFileRequests.has(fileInfo.path)) {
+                    const content = await pendingFileRequests.get(fileInfo.path);
+                    contentDiv.innerHTML = renderFileContent(content, fileInfo.path);
+                    return;
+                }
+                
+                // Create new request
+                const requestPromise = fetchSingleFileContent(fileInfo);
+                pendingFileRequests.set(fileInfo.path, requestPromise);
+                
+                const content = await requestPromise;
+                
+                // Cache the content
+                filesContentCache.set(fileInfo.path, content);
+                pendingFileRequests.delete(fileInfo.path);
+                
+                // Update the file object with loaded content
+                const fileIndex = repositoryData.files.findIndex(f => f.path === fileInfo.path);
+                if (fileIndex >= 0) {
+                    repositoryData.files[fileIndex].content = content;
+                }
+                
+                // Render the content
+                contentDiv.innerHTML = renderFileContent(content, fileInfo.path);
+                
+            } catch (error) {
+                console.error(`Failed to load ${fileInfo.path}:`, error);
+                contentDiv.innerHTML = `<pre class="error">Failed to load file: ${error.message}</pre>`;
+                pendingFileRequests.delete(fileInfo.path);
+            }
         }
 
         // Global variables for lazy loading
@@ -2929,6 +3534,758 @@
             }
             
             summaryElement.innerHTML = summaryHTML;
+        }
+
+        // Global variables for enhanced features
+        let currentBranch = 'main';
+        let availableBranches = [];
+        let availableTags = [];
+        let searchResults = [];
+        let originalFilesList = null;
+        let isSearchActive = false;
+        let fileTypeStats = {};
+
+        // Repository Browsing & Navigation Functions
+        
+        // Toggle advanced controls visibility
+        function toggleAdvancedControls() {
+            const branchControls = document.getElementById('branch-controls');
+            const searchControls = document.getElementById('search-controls');
+            const toggleBtn = document.getElementById('toggle-advanced-btn');
+            
+            const isVisible = branchControls.classList.contains('show');
+            
+            if (isVisible) {
+                branchControls.classList.remove('show');
+                searchControls.classList.remove('show');
+                toggleBtn.classList.remove('active');
+                toggleBtn.textContent = '⚙️ Advanced Controls';
+            } else {
+                branchControls.classList.add('show');
+                searchControls.classList.add('show');
+                toggleBtn.classList.add('active');
+                toggleBtn.textContent = '⚙️ Hide Advanced Controls';
+            }
+        }
+
+        // Fetch repository branches and tags
+        async function fetchBranchesAndTags(owner, repo) {
+            const headers = getGitHubHeaders();
+            
+            try {
+                // Fetch branches
+                const branchesResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/branches`, { headers });
+                if (branchesResponse.ok) {
+                    const branches = await branchesResponse.json();
+                    availableBranches = branches.map(branch => ({
+                        name: branch.name,
+                        type: 'branch',
+                        sha: branch.commit.sha,
+                        protected: branch.protected || false
+                    }));
+                }
+                
+                // Fetch tags
+                const tagsResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/tags`, { headers });
+                if (tagsResponse.ok) {
+                    const tags = await tagsResponse.json();
+                    availableTags = tags.slice(0, 20).map(tag => ({ // Limit to 20 most recent tags
+                        name: tag.name,
+                        type: 'tag',
+                        sha: tag.commit.sha
+                    }));
+                }
+                
+                populateBranchSelector();
+                
+            } catch (error) {
+                console.warn('Failed to fetch branches/tags:', error);
+            }
+        }
+
+        // Populate branch/tag selector
+        function populateBranchSelector() {
+            const branchSelect = document.getElementById('branch-select');
+            if (!branchSelect) return;
+            
+            branchSelect.innerHTML = '';
+            
+            // Add branches
+            if (availableBranches.length > 0) {
+                const branchGroup = document.createElement('optgroup');
+                branchGroup.label = '📂 Branches';
+                availableBranches.forEach(branch => {
+                    const option = document.createElement('option');
+                    option.value = `branch:${branch.name}`;
+                    option.textContent = `${branch.name}${branch.protected ? ' 🔒' : ''}`;
+                    option.selected = branch.name === currentBranch;
+                    branchGroup.appendChild(option);
+                });
+                branchSelect.appendChild(branchGroup);
+            }
+            
+            // Add tags
+            if (availableTags.length > 0) {
+                const tagGroup = document.createElement('optgroup');
+                tagGroup.label = '🏷️ Tags';
+                availableTags.forEach(tag => {
+                    const option = document.createElement('option');
+                    option.value = `tag:${tag.name}`;
+                    option.textContent = tag.name;
+                    tagGroup.appendChild(option);
+                });
+                branchSelect.appendChild(tagGroup);
+            }
+            
+            // If no branches or tags found, show default branch
+            if (availableBranches.length === 0 && availableTags.length === 0) {
+                const option = document.createElement('option');
+                option.value = `branch:${currentBranch}`;
+                option.textContent = currentBranch;
+                option.selected = true;
+                branchSelect.appendChild(option);
+            }
+        }
+
+        // Switch branch or tag
+        async function switchBranchOrTag() {
+            const branchSelect = document.getElementById('branch-select');
+            if (!branchSelect || !repositoryData) return;
+            
+            const selectedValue = branchSelect.value;
+            if (!selectedValue) return;
+            
+            const [type, name] = selectedValue.split(':');
+            
+            if (name === currentBranch) return; // No change needed
+            
+            try {
+                // Update current branch
+                currentBranch = name;
+                
+                // Clear current data
+                clearSearchResults();
+                resetFileView();
+                
+                // Show loading
+                const loading = document.getElementById('loading');
+                loading.style.display = 'flex';
+                
+                // Re-fetch repository with new branch/tag
+                const repoUrl = `https://github.com/${repositoryData.repoInfo.owner.login}/${repositoryData.repoInfo.name}`;
+                await renderRepositoryWithBranch(repoUrl, name);
+                
+            } catch (error) {
+                console.error('Failed to switch branch/tag:', error);
+                alert(`Failed to switch to ${type} "${name}": ${error.message}`);
+                
+                // Revert selection
+                const currentOption = branchSelect.querySelector(`option[value="branch:${currentBranch}"]`);
+                if (currentOption) {
+                    currentOption.selected = true;
+                }
+            }
+        }
+
+        // Update commit info display
+        function updateCommitInfo(commitData) {
+            const commitInfo = document.getElementById('commit-info');
+            const commitLink = document.getElementById('commit-link');
+            const commitMessage = document.getElementById('commit-message');
+            
+            if (!commitData || !commitInfo) return;
+            
+            const shortSha = commitData.sha ? commitData.sha.substring(0, 7) : 'unknown';
+            const message = commitData.commit?.message || 'No commit message';
+            const commitUrl = commitData.html_url || '#';
+            
+            commitLink.href = commitUrl;
+            commitLink.textContent = shortSha;
+            commitMessage.textContent = message.split('\n')[0]; // First line only
+            
+            commitInfo.style.display = 'flex';
+        }
+
+        // Search & Filtering Functions
+        
+        // Generate file type statistics and filters
+        function generateFileTypeFilters() {
+            if (!repositoryData || !repositoryData.files) return;
+            
+            fileTypeStats = {};
+            
+            repositoryData.files.forEach(file => {
+                const ext = getFileExtension(file.path);
+                const type = ext || 'no-extension';
+                fileTypeStats[type] = (fileTypeStats[type] || 0) + 1;
+            });
+            
+            const fileTypeFilters = document.getElementById('file-type-filters');
+            if (!fileTypeFilters) return;
+            
+            fileTypeFilters.innerHTML = '';
+            
+            // Sort by frequency
+            const sortedTypes = Object.entries(fileTypeStats)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 15); // Show top 15 file types
+            
+            sortedTypes.forEach(([type, count]) => {
+                const badge = document.createElement('span');
+                badge.className = 'file-type-badge';
+                badge.dataset.fileType = type;
+                badge.textContent = `${type === 'no-extension' ? '📄' : type} (${count})`;
+                badge.onclick = () => toggleFileTypeFilter(type);
+                fileTypeFilters.appendChild(badge);
+            });
+        }
+
+        // Toggle file type filter
+        function toggleFileTypeFilter(fileType) {
+            const badge = document.querySelector(`[data-file-type="${fileType}"]`);
+            if (!badge) return;
+            
+            const isActive = badge.classList.contains('active');
+            
+            if (isActive) {
+                badge.classList.remove('active');
+                clearFileTypeFilter();
+            } else {
+                // Clear other active badges
+                document.querySelectorAll('.file-type-badge.active').forEach(b => b.classList.remove('active'));
+                badge.classList.add('active');
+                filterFilesByType(fileType);
+            }
+        }
+
+        // Filter files by type
+        function filterFilesByType(fileType) {
+            if (!repositoryData || !repositoryData.files) return;
+            
+            const filteredFiles = repositoryData.files.filter(file => {
+                const ext = getFileExtension(file.path);
+                const type = ext || 'no-extension';
+                return type === fileType;
+            });
+            
+            displayFilteredFiles(filteredFiles, `Files with type: ${fileType}`);
+        }
+
+        // Clear file type filter
+        function clearFileTypeFilter() {
+            if (isSearchActive) {
+                performSearch(); // Re-run search if search is active
+            } else {
+                resetFileView();
+            }
+        }
+
+        // Handle search input with debouncing
+        let searchTimeout;
+        function handleSearchInput(event) {
+            clearTimeout(searchTimeout);
+            
+            if (event.key === 'Enter') {
+                performSearch();
+                return;
+            }
+            
+            // Debounce search for 300ms
+            searchTimeout = setTimeout(() => {
+                const query = event.target.value.trim();
+                if (query.length >= 2) {
+                    performSearch();
+                } else if (query.length === 0) {
+                    clearSearch();
+                }
+            }, 300);
+        }
+
+        // Perform search across files
+        async function performSearch() {
+            const searchInput = document.getElementById('search-input');
+            const query = searchInput?.value.trim();
+            
+            if (!query || !repositoryData || !repositoryData.files) return;
+            
+            const searchBtn = document.getElementById('search-btn');
+            searchBtn.disabled = true;
+            searchBtn.textContent = '🔄 Searching...';
+            
+            try {
+                // Get search options
+                const searchFilenames = document.getElementById('filter-filenames')?.checked ?? true;
+                const searchContent = document.getElementById('filter-content')?.checked ?? true;
+                const isRegex = document.getElementById('regex-search')?.checked ?? false;
+                const caseSensitive = document.getElementById('case-sensitive')?.checked ?? false;
+                const codeOnly = document.getElementById('filter-code')?.checked ?? false;
+                
+                searchResults = [];
+                
+                // Prepare search pattern
+                let searchPattern;
+                if (isRegex) {
+                    try {
+                        searchPattern = new RegExp(query, caseSensitive ? 'g' : 'gi');
+                    } catch (e) {
+                        throw new Error(`Invalid regex pattern: ${e.message}`);
+                    }
+                } else {
+                    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    searchPattern = new RegExp(escapedQuery, caseSensitive ? 'g' : 'gi');
+                }
+                
+                // Define file type filters
+                const codeExtensions = ['js', 'ts', 'py', 'java', 'cpp', 'c', 'h', 'cs', 'php', 'rb', 'go', 'rs', 'swift', 'kt'];
+                
+                for (const file of repositoryData.files) {
+                    const ext = getFileExtension(file.path);
+                    
+                    // Apply file type filters
+                    if (codeOnly && !codeExtensions.includes(ext)) continue;
+                    
+                    const matches = [];
+                    
+                    // Search in filename
+                    if (searchFilenames) {
+                        const filenameMatches = [...file.path.matchAll(searchPattern)];
+                        if (filenameMatches.length > 0) {
+                            matches.push({
+                                type: 'filename',
+                                text: file.path,
+                                matches: filenameMatches.map(m => ({ index: m.index, text: m[0] }))
+                            });
+                        }
+                    }
+                    
+                    // Search in content
+                    if (searchContent && file.content) {
+                        const lines = file.content.split('\n');
+                        lines.forEach((line, lineNum) => {
+                            const lineMatches = [...line.matchAll(searchPattern)];
+                            if (lineMatches.length > 0) {
+                                matches.push({
+                                    type: 'content',
+                                    lineNumber: lineNum + 1,
+                                    text: line.trim(),
+                                    matches: lineMatches.map(m => ({ index: m.index, text: m[0] }))
+                                });
+                            }
+                        });
+                    }
+                    
+                    // If content is not loaded yet, try to load it for search
+                    if (searchContent && !file.content && matches.length === 0) {
+                        try {
+                            await loadFileContentForSearch(file);
+                            const lines = file.content.split('\n');
+                            lines.forEach((line, lineNum) => {
+                                const lineMatches = [...line.matchAll(searchPattern)];
+                                if (lineMatches.length > 0) {
+                                    matches.push({
+                                        type: 'content',
+                                        lineNumber: lineNum + 1,
+                                        text: line.trim(),
+                                        matches: lineMatches.map(m => ({ index: m.index, text: m[0] }))
+                                    });
+                                }
+                            });
+                        } catch (error) {
+                            console.warn(`Failed to load content for search: ${file.path}`, error);
+                        }
+                    }
+                    
+                    if (matches.length > 0) {
+                        searchResults.push({
+                            file,
+                            matches,
+                            totalMatches: matches.reduce((sum, match) => sum + match.matches.length, 0)
+                        });
+                    }
+                }
+                
+                // Sort by relevance (filename matches first, then by number of matches)
+                searchResults.sort((a, b) => {
+                    const aHasFilename = a.matches.some(m => m.type === 'filename');
+                    const bHasFilename = b.matches.some(m => m.type === 'filename');
+                    
+                    if (aHasFilename && !bHasFilename) return -1;
+                    if (!aHasFilename && bHasFilename) return 1;
+                    
+                    return b.totalMatches - a.totalMatches;
+                });
+                
+                displaySearchResults(query, searchResults);
+                isSearchActive = true;
+                
+            } catch (error) {
+                console.error('Search error:', error);
+                alert(`Search error: ${error.message}`);
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.textContent = '🔍 Search';
+            }
+        }
+
+        // Load file content specifically for search
+        async function loadFileContentForSearch(file) {
+            if (file.content) return;
+            
+            // Check cache first
+            if (filesContentCache.has(file.path)) {
+                file.content = filesContentCache.get(file.path);
+                return;
+            }
+            
+            // Load content
+            file.content = await fetchSingleFileContent(file);
+            filesContentCache.set(file.path, file.content);
+        }
+
+        // Display search results
+        function displaySearchResults(query, results) {
+            const searchResultsContainer = document.getElementById('search-results');
+            const searchResultsCount = document.getElementById('search-results-count');
+            const searchResultsList = document.getElementById('search-results-list');
+            
+            if (!searchResultsContainer || !searchResultsCount || !searchResultsList) return;
+            
+            const totalMatches = results.reduce((sum, result) => sum + result.totalMatches, 0);
+            
+            searchResultsCount.textContent = `Found ${totalMatches} matches in ${results.length} files`;
+            searchResultsList.innerHTML = '';
+            
+            if (results.length === 0) {
+                searchResultsList.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 2rem;">No matches found</p>';
+            } else {
+                results.slice(0, 50).forEach(result => { // Limit to 50 results for performance
+                    const resultElement = createSearchResultElement(result, query);
+                    searchResultsList.appendChild(resultElement);
+                });
+                
+                if (results.length > 50) {
+                    const moreElement = document.createElement('div');
+                    moreElement.style.cssText = 'text-align: center; padding: 1rem; color: var(--text-muted);';
+                    moreElement.textContent = `... and ${results.length - 50} more results`;
+                    searchResultsList.appendChild(moreElement);
+                }
+            }
+            
+            searchResultsContainer.style.display = 'block';
+            
+            // Update main file view to show only matching files
+            const matchingFiles = results.map(r => r.file);
+            displayFilteredFiles(matchingFiles, `Search results for "${query}"`);
+        }
+
+        // Create search result element
+        function createSearchResultElement(result, query) {
+            const div = document.createElement('div');
+            div.className = 'search-result-item';
+            
+            const fileId = result.file.path.replace(/[^a-zA-Z0-9-_]/g, '-');
+            
+            let matchesHTML = '';
+            result.matches.slice(0, 5).forEach(match => { // Show up to 5 matches per file
+                if (match.type === 'filename') {
+                    matchesHTML += `<div class="search-result-preview">
+                        <strong>Filename:</strong> ${highlightMatches(match.text, match.matches)}
+                    </div>`;
+                } else {
+                    const contextText = truncateText(match.text, 100);
+                    matchesHTML += `<div class="search-result-preview">
+                        <strong>Line ${match.lineNumber}:</strong> ${highlightMatches(contextText, match.matches)}
+                    </div>`;
+                }
+            });
+            
+            if (result.matches.length > 5) {
+                matchesHTML += `<div style="color: var(--text-muted); font-size: 0.8rem; padding: 0.5rem;">
+                    ... and ${result.matches.length - 5} more matches
+                </div>`;
+            }
+            
+            div.innerHTML = `
+                <div class="search-result-header">
+                    <a href="#file-${fileId}" class="search-result-file">${result.file.path}</a>
+                    <span class="search-result-matches">${result.totalMatches} matches</span>
+                </div>
+                ${matchesHTML}
+            `;
+            
+            return div;
+        }
+
+        // Highlight search matches in text
+        function highlightMatches(text, matches) {
+            if (!matches || matches.length === 0) return text;
+            
+            let highlightedText = text;
+            let offset = 0;
+            
+            matches.forEach(match => {
+                const start = match.index + offset;
+                const end = start + match.text.length;
+                const highlighted = `<span class="search-highlight">${match.text}</span>`;
+                
+                highlightedText = highlightedText.slice(0, start) + highlighted + highlightedText.slice(end);
+                offset += highlighted.length - match.text.length;
+            });
+            
+            return highlightedText;
+        }
+
+        // Truncate text to specified length
+        function truncateText(text, maxLength) {
+            if (text.length <= maxLength) return text;
+            
+            const truncated = text.substring(0, maxLength);
+            const lastSpace = truncated.lastIndexOf(' ');
+            return lastSpace > maxLength * 0.7 ? truncated.substring(0, lastSpace) + '...' : truncated + '...';
+        }
+
+        // Clear search and reset view
+        function clearSearch() {
+            const searchInput = document.getElementById('search-input');
+            const searchResults = document.getElementById('search-results');
+            
+            if (searchInput) searchInput.value = '';
+            if (searchResults) searchResults.style.display = 'none';
+            
+            searchResults.length = 0;
+            isSearchActive = false;
+            
+            clearActiveFileTypeFilters();
+            resetFileView();
+        }
+
+        // Clear active file type filters
+        function clearActiveFileTypeFilters() {
+            document.querySelectorAll('.file-type-badge.active').forEach(badge => {
+                badge.classList.remove('active');
+            });
+        }
+
+        // Display filtered files
+        function displayFilteredFiles(files, title) {
+            if (!originalFilesList) {
+                originalFilesList = [...repositoryData.files];
+            }
+            
+            // Temporarily replace the files list
+            repositoryData.files = files;
+            
+            // Reset pagination
+            currentPage = 1;
+            
+            // Regenerate file sections and tree
+            generateFileTree();
+            generateEnhancedFileSections();
+            
+            // Update file count in sidebar
+            const sidebarHeader = document.querySelector('.sidebar h3');
+            if (sidebarHeader) {
+                sidebarHeader.innerHTML = `${title} (${files.length}) <small style="color: var(--text-muted); font-weight: normal;">filtered</small>`;
+            }
+        }
+
+        // Reset file view to original state
+        function resetFileView() {
+            if (originalFilesList) {
+                repositoryData.files = originalFilesList;
+                originalFilesList = null;
+            }
+            
+            currentPage = 1;
+            generateFileTree();
+            generateEnhancedFileSections();
+        }
+
+        // Clear search results
+        function clearSearchResults() {
+            searchResults = [];
+            isSearchActive = false;
+            
+            const searchInput = document.getElementById('search-input');
+            const searchResultsContainer = document.getElementById('search-results');
+            
+            if (searchInput) searchInput.value = '';
+            if (searchResultsContainer) searchResultsContainer.style.display = 'none';
+        }
+
+        // Render repository with specific branch/tag
+        async function renderRepositoryWithBranch(repoUrl, branchOrTag) {
+            const repoInfo = parseRepoUrl(repoUrl);
+            if (!repoInfo) {
+                throw new Error('Invalid repository URL');
+            }
+            
+            // Update the repo input to reflect current URL
+            const repoInput = document.getElementById('repo-input');
+            if (repoInput) {
+                repoInput.value = repoUrl;
+            }
+            
+            try {
+                // Fetch repository data with specified branch
+                repositoryData = await fetchRepositoryContentsWithBranch(repoInfo.owner, repoInfo.repo, branchOrTag);
+                currentBranch = branchOrTag;
+                
+                // Fetch branches and tags for navigation
+                await fetchBranchesAndTags(repoInfo.owner, repoInfo.repo);
+                
+                // Update UI
+                updateRepositoryUI();
+                generateFileTypeFilters();
+                
+                // Show advanced controls
+                const advancedToggle = document.getElementById('advanced-controls-toggle');
+                if (advancedToggle) {
+                    advancedToggle.style.display = 'block';
+                }
+                
+                // Show results container
+                const resultsContainer = document.getElementById('results-container');
+                if (resultsContainer) {
+                    resultsContainer.classList.add('show');
+                }
+                
+                // Fetch latest commit info for the branch
+                await fetchCommitInfo(repoInfo.owner, repoInfo.repo, branchOrTag);
+                
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        // Fetch repository contents with specific branch
+        async function fetchRepositoryContentsWithBranch(owner, repo, branchOrTag) {
+            const loading = document.getElementById('loading');
+            const renderBtn = document.getElementById('render-btn');
+            
+            loading.style.display = 'flex';
+            renderBtn.disabled = true;
+            
+            try {
+                const headers = getGitHubHeaders();
+                
+                // Fetch repository info
+                const repoResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers });
+                if (!repoResponse.ok) {
+                    if (repoResponse.status === 404) {
+                        throw new Error('Repository not found or is private');
+                    } else if (repoResponse.status === 403) {
+                        const resetTime = repoResponse.headers.get('X-RateLimit-Reset');
+                        const resetDate = resetTime ? new Date(parseInt(resetTime) * 1000).toLocaleTimeString() : 'unknown';
+                        throw new Error(`API rate limit exceeded. Rate limit resets at ${resetDate}. Consider adding a GitHub token.`);
+                    } else if (repoResponse.status === 401) {
+                        throw new Error('Invalid GitHub token. Please check your token and try again.');
+                    } else {
+                        throw new Error(`Failed to fetch repository: ${repoResponse.status}`);
+                    }
+                }
+                const repoInfo = await repoResponse.json();
+                
+                // Use specified branch or fall back to default
+                const targetBranch = branchOrTag || repoInfo.default_branch;
+                
+                // Fetch repository tree for the target branch
+                const treeResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${targetBranch}?recursive=1`, { headers });
+                if (!treeResponse.ok) {
+                    if (treeResponse.status === 403) {
+                        const resetTime = treeResponse.headers.get('X-RateLimit-Reset');
+                        const resetDate = resetTime ? new Date(parseInt(resetTime) * 1000).toLocaleTimeString() : 'unknown';
+                        throw new Error(`API rate limit exceeded while fetching repository tree. Rate limit resets at ${resetDate}. Consider adding a GitHub token.`);
+                    }
+                    throw new Error(`Failed to fetch repository contents for branch/tag: ${targetBranch}`);
+                }
+                const treeData = await treeResponse.json();
+                
+                // Process files as before
+                const allFiles = [];
+                const categorizedFiles = {
+                    rendered: [],
+                    binary: [],
+                    large: [],
+                    ignored: [],
+                    failed: []
+                };
+                
+                for (const item of treeData.tree) {
+                    if (item.type === 'blob') {
+                        const category = categorizeFile(item.path, item.size || 0);
+                        
+                        const fileInfo = {
+                            path: item.path,
+                            size: item.size || 0,
+                            sha: item.sha,
+                            category: category
+                        };
+                        
+                        if (category.category !== 'ignored') {
+                            allFiles.push(fileInfo);
+                        }
+                        
+                        if (category.include) {
+                            categorizedFiles.rendered.push(fileInfo);
+                        } else {
+                            const categoryKey = category.category === 'ignored' ? 'ignored' : 
+                                              category.category === 'large' ? 'large' : 'binary';
+                            categorizedFiles[categoryKey].push(fileInfo);
+                        }
+                    }
+                }
+                
+                totalFilesToProcess = categorizedFiles.rendered.length;
+                
+                const githubToken = document.getElementById('github-token').value.trim();
+                const maxFiles = githubToken ? 200 : 50;
+                
+                if (totalFilesToProcess > maxFiles) {
+                    categorizedFiles.rendered.sort((a, b) => a.size - b.size);
+                    const truncatedFiles = categorizedFiles.rendered.splice(maxFiles);
+                    if (!categorizedFiles.truncated) categorizedFiles.truncated = [];
+                    categorizedFiles.truncated.push(...truncatedFiles);
+                    totalFilesToProcess = categorizedFiles.rendered.length;
+                }
+                
+                const filesList = categorizedFiles.rendered.map(fileInfo => ({
+                    path: fileInfo.path,
+                    size: fileInfo.size,
+                    sha: fileInfo.sha,
+                    content: null
+                }));
+                
+                return {
+                    repoInfo: { ...repoInfo, currentBranch: targetBranch },
+                    files: filesList,
+                    categorizedFiles,
+                    allFiles,
+                    totalSize: categorizedFiles.rendered.reduce((sum, file) => sum + (file.size || 0), 0),
+                    treeStructure: await generateTreeStructure(treeData.tree)
+                };
+                
+            } catch (error) {
+                throw error;
+            } finally {
+                loading.style.display = 'none';
+                renderBtn.disabled = false;
+            }
+        }
+
+        // Fetch commit information for branch/tag
+        async function fetchCommitInfo(owner, repo, branchOrTag) {
+            try {
+                const headers = getGitHubHeaders();
+                const commitsResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/commits/${branchOrTag}`, { headers });
+                
+                if (commitsResponse.ok) {
+                    const commitData = await commitsResponse.json();
+                    updateCommitInfo(commitData);
+                }
+            } catch (error) {
+                console.warn('Failed to fetch commit info:', error);
+            }
         }
     </script>
 </body>
