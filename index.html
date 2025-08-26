@@ -600,6 +600,49 @@
             /* Padding is handled by .file-content .markdown-content rule above */
         }
 
+        /* Jupyter Notebook specific styles */
+        .jupyter-notebook {
+            position: relative;
+        }
+
+        .notebook-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+        }
+
+        .jupyter-notebook .code-block-wrapper {
+            position: relative;
+        }
+
+        .jupyter-notebook .code-block-wrapper::before {
+            content: "📱 Cell";
+            position: absolute;
+            top: 0.5rem;
+            right: 1rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            background: var(--bg-secondary);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            z-index: 1;
+        }
+
+        .jupyter-notebook code:not(.hljs) {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+        }
+
+        .jupyter-notebook blockquote {
+            border-left-color: #ff6b35;
+            background-color: rgba(255, 107, 53, 0.1);
+        }
+
+        .jupyter-notebook h1, .jupyter-notebook h2, .jupyter-notebook h3 {
+            border-bottom-color: var(--border-secondary);
+        }
+
         .mention {
             color: var(--accent-primary);
             font-weight: 500;
@@ -1465,6 +1508,91 @@
             return ['md', 'markdown', 'mdown', 'mkd', 'mkdn'].includes(ext);
         }
 
+        // Check if file is Jupyter notebook
+        function isJupyterNotebook(filename) {
+            const ext = getFileExtension(filename);
+            return ext === 'ipynb';
+        }
+
+        // Parse Jupyter notebook content and extract readable cells
+        // Note: Jupyter notebooks are exempt from size limits due to their special parsing
+        function parseJupyterNotebook(content) {
+            try {
+                const notebook = JSON.parse(content);
+                let extractedContent = '';
+                
+                if (!notebook.cells || !Array.isArray(notebook.cells)) {
+                    return 'Invalid Jupyter notebook format: no cells found';
+                }
+                
+                // Add notebook metadata as header
+                extractedContent += '# Jupyter Notebook\n\n';
+                if (notebook.metadata && notebook.metadata.kernelspec) {
+                    extractedContent += `**Kernel:** ${notebook.metadata.kernelspec.display_name || notebook.metadata.kernelspec.name}\n\n`;
+                }
+                
+                notebook.cells.forEach((cell, index) => {
+                    const cellType = cell.cell_type;
+                    const source = Array.isArray(cell.source) ? cell.source.join('') : cell.source || '';
+                    
+                    if (cellType === 'markdown') {
+                        // Add markdown cells as-is
+                        if (source.trim()) {
+                            extractedContent += source + '\n\n';
+                        }
+                    } else if (cellType === 'code') {
+                        // Add code cells with proper formatting
+                        if (source.trim()) {
+                            // Determine language from kernel metadata
+                            let language = 'python'; // Default to Python
+                            if (notebook.metadata && notebook.metadata.kernelspec) {
+                                const kernelName = notebook.metadata.kernelspec.name || '';
+                                if (kernelName.includes('julia')) language = 'julia';
+                                else if (kernelName.includes('r')) language = 'r';
+                                else if (kernelName.includes('scala')) language = 'scala';
+                                else if (kernelName.includes('javascript') || kernelName.includes('node')) language = 'javascript';
+                            }
+                            
+                            extractedContent += `\`\`\`${language}\n${source}\`\`\`\n\n`;
+                        }
+                        
+                        // Add outputs if they exist and are text-based
+                        if (cell.outputs && Array.isArray(cell.outputs)) {
+                            cell.outputs.forEach(output => {
+                                if (output.output_type === 'stream' && output.text) {
+                                    const outputText = Array.isArray(output.text) ? output.text.join('') : output.text;
+                                    if (outputText.trim()) {
+                                        extractedContent += `**Output:**\n\`\`\`\n${outputText}\`\`\`\n\n`;
+                                    }
+                                } else if (output.output_type === 'execute_result' && output.data && output.data['text/plain']) {
+                                    const outputText = Array.isArray(output.data['text/plain']) ? 
+                                        output.data['text/plain'].join('') : output.data['text/plain'];
+                                    if (outputText.trim()) {
+                                        extractedContent += `**Result:**\n\`\`\`\n${outputText}\`\`\`\n\n`;
+                                    }
+                                } else if (output.output_type === 'error') {
+                                    const traceback = output.traceback ? output.traceback.join('\n') : '';
+                                    if (traceback.trim()) {
+                                        extractedContent += `**Error:**\n\`\`\`\n${traceback}\`\`\`\n\n`;
+                                    }
+                                }
+                            });
+                        }
+                    } else if (cellType === 'raw') {
+                        // Add raw cells as code blocks
+                        if (source.trim()) {
+                            extractedContent += `\`\`\`\n${source}\`\`\`\n\n`;
+                        }
+                    }
+                });
+                
+                return extractedContent;
+            } catch (error) {
+                console.warn('Failed to parse Jupyter notebook:', error);
+                return `Error parsing Jupyter notebook: ${error.message}\n\nRaw content:\n\`\`\`json\n${content}\`\`\``;
+            }
+        }
+
         // Enhanced file categorization with better binary detection
         const BINARY_EXTENSIONS = new Set([
             'png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'ico',
@@ -1487,7 +1615,8 @@
             'dockerfile', 'makefile', 'cmake', 'gradle',
             'gitignore', 'gitattributes', 'editorconfig',
             'license', 'readme', 'changelog', 'todo', 'authors',
-            'log', 'env', 'example'
+            'log', 'env', 'example',
+            'ipynb' // Add Jupyter notebooks as text files
         ]);
 
         function categorizeFile(filename, size) {
@@ -1534,14 +1663,14 @@
                 return { include: false, reason: 'ignored', category: 'ignored' };
             }
             
-            // Check file size
+            // Check file size (except for Jupyter notebooks which should always be processed)
             const maxSize = 100 * 1024; // 100KB limit
-            if (size > maxSize) {
+            const ext = getFileExtension(filename);
+            if (size > maxSize && ext !== 'ipynb') {
                 return { include: false, reason: 'too_large', category: 'large' };
             }
             
             // Check if it's a known binary file
-            const ext = getFileExtension(filename);
             if (BINARY_EXTENSIONS.has(ext)) {
                 return { include: false, reason: 'binary', category: 'binary' };
             }
@@ -1796,7 +1925,32 @@
 
         // Render file content with syntax highlighting and overflow handling
         function renderFileContent(content, filename) {
-            if (isMarkdownFile(filename)) {
+            if (isJupyterNotebook(filename)) {
+                // Parse Jupyter notebook and extract readable content
+                const extractedContent = parseJupyterNotebook(content);
+                try {
+                    // Render the extracted content as markdown
+                    let html = marked.parse(extractedContent);
+                    html = processGitHubFeatures(html, extractedContent);
+                    return `<div class="markdown-content jupyter-notebook">
+                        <div class="notebook-header" style="background: var(--bg-tertiary); padding: 0.5rem 1rem; margin: -1rem -1.5rem 1rem -1.5rem; border-bottom: 1px solid var(--border-primary); font-size: 0.9rem; color: var(--text-secondary);">
+                            📓 Jupyter Notebook - Parsed content (cells and outputs)
+                        </div>
+                        ${html}
+                    </div>`;
+                } catch (error) {
+                    console.warn('Markdown parsing failed for Jupyter notebook:', error);
+                    // Fallback to escaped content
+                    const escapedContent = extractedContent
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;');
+                    return `<div class="notebook-header" style="background: var(--bg-tertiary); padding: 0.5rem 1rem; margin: -1rem -1.5rem 1rem -1.5rem; border-bottom: 1px solid var(--border-primary); font-size: 0.9rem; color: var(--text-secondary);">
+                        📓 Jupyter Notebook - Parsed content (fallback)
+                    </div>
+                    <pre><code>${escapedContent}</code></pre>`;
+                }
+            } else if (isMarkdownFile(filename)) {
                 try {
                     // Process the markdown with our configured marked renderer
                     let html = marked.parse(content);
@@ -2374,7 +2528,22 @@
                     const a = document.createElement('a');
                     const fileId = file.path.replace(/[^a-zA-Z0-9-_]/g, '-');
                     a.href = `#file-${fileId}`;
-                    a.textContent = file.filename;
+                    
+                    // Add icon for different file types
+                    let icon = '';
+                    if (isJupyterNotebook(file.filename)) {
+                        icon = '📓 ';
+                    } else if (isMarkdownFile(file.filename)) {
+                        icon = '📝 ';
+                    } else if (['py', 'js', 'ts', 'java', 'cpp', 'c', 'h'].includes(getFileExtension(file.filename))) {
+                        icon = '⚡ ';
+                    } else if (['json', 'xml', 'yaml', 'yml'].includes(getFileExtension(file.filename))) {
+                        icon = '📋 ';
+                    } else {
+                        icon = '📄 ';
+                    }
+                    
+                    a.textContent = icon + file.filename;
                     a.title = `${file.path} (${formatBytes(file.size)})`;
                     li.appendChild(a);
                     
@@ -2422,7 +2591,7 @@
                     </h3>
                     <span class="file-size">
                         ${formatBytes(file.size)} • 
-                        ${getFileExtension(file.path).toUpperCase() || 'TXT'} • 
+                        ${isJupyterNotebook(file.path) ? 'NOTEBOOK' : (getFileExtension(file.path).toUpperCase() || 'TXT')} • 
                         ${globalIndex + 1} of ${totalFiles}
                     </span>
                 `;
@@ -2548,12 +2717,15 @@
                 summaryHTML += `
                     <details style="margin-bottom: 0.5rem;">
                         <summary style="cursor: pointer; color: var(--text-secondary);">
-                            📦 Large files (${large.length})
+                            📦 Large files (${large.length}) - Over 100KB limit
                         </summary>
                         <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: var(--text-muted); font-size: 0.9rem;">
                             ${large.slice(0, 10).map(f => `<li><code>${f.path}</code> (${formatBytes(f.size)})</li>`).join('')}
                             ${large.length > 10 ? `<li><em>... and ${large.length - 10} more</em></li>` : ''}
                         </ul>
+                        <p style="margin: 0.5rem 0; padding-left: 1.5rem; color: var(--text-muted); font-size: 0.8rem; font-style: italic;">
+                            💡 Note: Jupyter notebooks (.ipynb) are exempt from size limits and will always be processed.
+                        </p>
                     </details>
                 `;
             }
