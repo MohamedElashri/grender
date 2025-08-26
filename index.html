@@ -159,6 +159,12 @@
             box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.1);
         }
 
+        /* Highlight file limit input when it has a custom value */
+        .repo-input[type="number"]:not(:placeholder-shown) {
+            border-color: var(--accent-primary);
+            background-color: rgba(9, 105, 218, 0.05);
+        }
+
         .render-btn {
             padding: 0.75rem 1.5rem;
             background-color: var(--accent-primary);
@@ -1328,10 +1334,44 @@
                         👁️ Show Token
                     </button>
                 </div>
+                <div class="input-group" style="margin-top: 1rem;">
+                    <input type="number" 
+                           class="repo-input" 
+                           id="file-limit" 
+                           placeholder="Max files to process (default: 50 without token, 200 with token)" 
+                           min="1" 
+                           max="1000"
+                           value=""
+                           style="flex: 1;">
+                    <button class="toggle-btn" onclick="resetFileLimit()" id="reset-limit-btn" style="min-width: 80px;">
+                        🔄 Reset
+                    </button>
+                    <button class="toggle-btn" onclick="showFileLimitInfo()" id="limit-info-btn" style="min-width: 60px;">
+                        ℹ️ Info
+                    </button>
+                </div>
                 <div style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">
                     💡 <strong>Tip:</strong> Add a GitHub token to avoid rate limits. 
                     <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--accent-primary);">Create one here</a> 
                     with 'public_repo' scope.
+                </div>
+                <div id="file-limit-info" style="display: none; margin-top: 0.5rem; padding: 1rem; background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 6px; font-size: 0.9rem; color: var(--text-secondary);">
+                    <div style="margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">📁 File Limit Information</div>
+                    <div style="margin-bottom: 0.5rem;">
+                        • <strong>Without GitHub token:</strong> Default limit is 50 files (to stay within anonymous API limits)
+                    </div>
+                    <div style="margin-bottom: 0.5rem;">
+                        • <strong>With GitHub token:</strong> Default limit is 200 files (higher rate limits available)
+                    </div>
+                    <div style="margin-bottom: 0.5rem;">
+                        • <strong>Custom limit:</strong> You can set any limit from 1 to 1000 files
+                    </div>
+                    <div style="margin-bottom: 0.5rem;">
+                        • Files are prioritized by size (smaller files first) to maximize content quality
+                    </div>
+                    <div style="color: var(--text-muted);">
+                        ⚠️ Higher limits may take longer to process and consume more API requests
+                    </div>
                 </div>
                 <div id="loading" class="loading" style="display: none;">
                     <div class="spinner"></div>
@@ -1844,6 +1884,81 @@
             }
         }
 
+        // Reset file limit to default
+        function resetFileLimit() {
+            const fileLimitInput = document.getElementById('file-limit');
+            if (!fileLimitInput) return;
+            
+            fileLimitInput.value = '';
+            
+            // Show a brief confirmation
+            const resetBtn = document.getElementById('reset-limit-btn');
+            if (resetBtn) {
+                const originalText = resetBtn.textContent;
+                resetBtn.textContent = '✅ Reset';
+                resetBtn.style.background = 'var(--accent-primary)';
+                resetBtn.style.color = 'white';
+                
+                setTimeout(() => {
+                    resetBtn.textContent = originalText;
+                    resetBtn.style.background = '';
+                    resetBtn.style.color = '';
+                }, 1500);
+            }
+        }
+
+        // Show/hide file limit information
+        function showFileLimitInfo() {
+            const infoDiv = document.getElementById('file-limit-info');
+            const infoBtn = document.getElementById('limit-info-btn');
+            
+            if (!infoDiv || !infoBtn) return;
+            
+            if (infoDiv.style.display === 'none') {
+                infoDiv.style.display = 'block';
+                infoBtn.textContent = '❌ Hide';
+                infoBtn.style.background = 'var(--accent-primary)';
+                infoBtn.style.color = 'white';
+            } else {
+                infoDiv.style.display = 'none';
+                infoBtn.textContent = 'ℹ️ Info';
+                infoBtn.style.background = '';
+                infoBtn.style.color = '';
+            }
+        }
+
+        // Get user-specified file limit or default
+        function getFileLimit() {
+            const fileLimitInput = document.getElementById('file-limit');
+            const githubToken = document.getElementById('github-token').value.trim();
+            
+            // Check if user has specified a custom limit
+            if (fileLimitInput && fileLimitInput.value) {
+                const customLimit = parseInt(fileLimitInput.value);
+                if (!isNaN(customLimit) && customLimit > 0 && customLimit <= 1000) {
+                    // Save to localStorage for persistence
+                    localStorage.setItem('git-render-file-limit', customLimit.toString());
+                    return customLimit;
+                }
+            }
+            
+            // Return default limits based on token availability
+            return githubToken ? 200 : 50;
+        }
+
+        // Load saved file limit from localStorage
+        function loadSavedFileLimit() {
+            const fileLimitInput = document.getElementById('file-limit');
+            const savedLimit = localStorage.getItem('git-render-file-limit');
+            
+            if (fileLimitInput && savedLimit) {
+                const limit = parseInt(savedLimit);
+                if (!isNaN(limit) && limit > 0 && limit <= 1000) {
+                    fileLimitInput.value = limit.toString();
+                }
+            }
+        }
+
         // Get GitHub API headers with optional token
         function getGitHubHeaders() {
             const tokenInput = document.getElementById('github-token');
@@ -2210,12 +2325,14 @@
                 totalFilesToProcess = categorizedFiles.rendered.length;
                 
                 // Limit the number of files to process to avoid rate limits
-                // Without GitHub token: max 50 files, with token: max 200 files
+                // Use user-specified limit or defaults: 50 without token, 200 with token
+                const maxFiles = getFileLimit();
                 const githubToken = document.getElementById('github-token').value.trim();
-                const maxFiles = githubToken ? 200 : 50;
+                const isCustomLimit = document.getElementById('file-limit').value.trim() !== '';
                 
                 if (totalFilesToProcess > maxFiles) {
-                    console.warn(`Repository has ${totalFilesToProcess} files to render. Limiting to ${maxFiles} files to avoid rate limits.`);
+                    const limitType = isCustomLimit ? 'custom' : (githubToken ? 'token-default' : 'no-token-default');
+                    console.warn(`Repository has ${totalFilesToProcess} files to render. Limiting to ${maxFiles} files (${limitType} limit).`);
                     
                     // Sort files by size (smaller first) to prioritize text files
                     categorizedFiles.rendered.sort((a, b) => a.size - b.size);
@@ -2506,6 +2623,18 @@
             }
             
             try {
+                // Update loading message with file limit info
+                const loading = document.getElementById('loading');
+                const loadingText = loading ? loading.querySelector('span') : null;
+                const currentLimit = getFileLimit();
+                const isCustomLimit = document.getElementById('file-limit').value.trim() !== '';
+                const githubToken = document.getElementById('github-token').value.trim();
+                
+                if (loadingText) {
+                    const limitType = isCustomLimit ? 'custom' : (githubToken ? 'with token' : 'no token');
+                    loadingText.textContent = `Processing repository... (limit: ${currentLimit} files, ${limitType})`;
+                }
+                
                 // Check rate limit before starting
                 await checkRateLimit();
                 
@@ -2532,12 +2661,30 @@
                     }
                 });
             }
+            
+            // Update file limit placeholder when token changes
+            const tokenInput = document.getElementById('github-token');
+            const fileLimitInput = document.getElementById('file-limit');
+            
+            if (tokenInput && fileLimitInput) {
+                function updateFileLimitPlaceholder() {
+                    const hasToken = tokenInput.value.trim() !== '';
+                    const defaultLimit = hasToken ? 200 : 50;
+                    fileLimitInput.placeholder = `Max files to process (default: ${defaultLimit}${hasToken ? ' with token' : ' without token'})`;
+                }
+                
+                // Update placeholder initially and when token changes
+                updateFileLimitPlaceholder();
+                tokenInput.addEventListener('input', updateFileLimitPlaceholder);
+                tokenInput.addEventListener('paste', () => setTimeout(updateFileLimitPlaceholder, 0));
+            }
         });
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
             try {
                 initTheme();
+                loadSavedFileLimit(); // Load saved file limit
                 
                 // Set responsive defaults for files per page
                 adjustFilesPerPageForScreen();
@@ -3517,18 +3664,38 @@
             }
             
             if (truncated && truncated.length > 0) {
+                const currentLimit = getFileLimit();
+                const githubToken = document.getElementById('github-token').value.trim();
+                const isCustomLimit = document.getElementById('file-limit').value.trim() !== '';
+                
+                let limitDescription;
+                if (isCustomLimit) {
+                    limitDescription = `custom limit of ${currentLimit} files`;
+                } else if (githubToken) {
+                    limitDescription = `default limit of ${currentLimit} files (with GitHub token)`;
+                } else {
+                    limitDescription = `default limit of ${currentLimit} files (no GitHub token)`;
+                }
+                
                 summaryHTML += `
                     <details style="margin-bottom: 0.5rem;">
                         <summary style="cursor: pointer; color: var(--text-secondary);">
-                            ✂️ Truncated files (${truncated.length}) - Limited to prevent rate limits
+                            ✂️ Truncated files (${truncated.length}) - Limited by ${limitDescription}
                         </summary>
                         <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: var(--text-muted); font-size: 0.9rem;">
                             ${truncated.slice(0, 10).map(f => `<li><code>${f.path}</code> (${formatBytes(f.size)})</li>`).join('')}
                             ${truncated.length > 10 ? `<li><em>... and ${truncated.length - 10} more</em></li>` : ''}
                         </ul>
-                        <p style="margin: 0.5rem 0; padding-left: 1.5rem; color: var(--text-muted); font-size: 0.8rem; font-style: italic;">
-                            💡 Too many files to process without hitting rate limits. Add a GitHub token to process up to 200 files instead of 50.
-                        </p>
+                        <div style="margin: 0.5rem 0; padding-left: 1.5rem; color: var(--text-muted); font-size: 0.8rem;">
+                            ${isCustomLimit ? 
+                                `💡 You set a custom limit of ${currentLimit} files. You can increase this limit (up to 1,000) in the file limit input above.` :
+                                githubToken ? 
+                                    `💡 Using default limit of ${currentLimit} files with GitHub token. You can set a custom limit (up to 1,000) in the file limit input above.` :
+                                    `💡 Using default limit of ${currentLimit} files without GitHub token. Add a token to increase the default to 200 files, or set a custom limit (up to 1,000) above.`
+                            }
+                            <br><br>
+                            🎯 <strong>Tip:</strong> Files are sorted by size (smallest first) to prioritize the most important content.
+                        </div>
                     </details>
                 `;
             }
@@ -4238,8 +4405,8 @@
                 
                 totalFilesToProcess = categorizedFiles.rendered.length;
                 
-                const githubToken = document.getElementById('github-token').value.trim();
-                const maxFiles = githubToken ? 200 : 50;
+                // Use the same file limit logic as the main function
+                const maxFiles = getFileLimit();
                 
                 if (totalFilesToProcess > maxFiles) {
                     categorizedFiles.rendered.sort((a, b) => a.size - b.size);
