@@ -1737,7 +1737,7 @@
         function updatePagination() {
             if (!repositoryData || !repositoryData.files) return;
             
-            // Use helper function to get available files
+            // Use helper function to get available files and count them
             const availableFiles = getAvailableFiles();
             const totalFiles = availableFiles.length;
             totalPages = Math.ceil(totalFiles / filesPerPage);
@@ -1963,6 +1963,42 @@
                         !file.content.startsWith('[Error loading file:') && 
                         !file.content.startsWith('Failed to load') && 
                         file.content !== '[Content not available]');
+            });
+        }
+
+        // Sort files with README.md first, then by directory structure
+        function sortFilesByStructure(files) {
+            return files.sort((a, b) => {
+                // README.md always comes first regardless of location
+                const aIsReadme = a.path.toLowerCase().endsWith('readme.md');
+                const bIsReadme = b.path.toLowerCase().endsWith('readme.md');
+                
+                if (aIsReadme && !bIsReadme) return -1;
+                if (!aIsReadme && bIsReadme) return 1;
+                if (aIsReadme && bIsReadme) {
+                    // If both are README.md files, prioritize root level
+                    const aIsRoot = !a.path.includes('/');
+                    const bIsRoot = !b.path.includes('/');
+                    if (aIsRoot && !bIsRoot) return -1;
+                    if (!aIsRoot && bIsRoot) return 1;
+                }
+                
+                // For non-README files, sort by directory structure
+                const aParts = a.path.split('/');
+                const bParts = b.path.split('/');
+                
+                // Compare directory depth (root files first)
+                if (aParts.length !== bParts.length) {
+                    return aParts.length - bParts.length;
+                }
+                
+                // Compare path components
+                for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
+                    const comparison = aParts[i].localeCompare(bParts[i]);
+                    if (comparison !== 0) return comparison;
+                }
+                
+                return 0;
             });
         }
 
@@ -2355,8 +2391,8 @@
                     const limitType = isCustomLimit ? 'custom' : (githubToken ? 'token-default' : 'no-token-default');
                     console.warn(`Repository has ${totalFilesToProcess} files to render. Limiting to ${maxFiles} files (${limitType} limit).`);
                     
-                    // Sort files by size (smaller first) to prioritize text files
-                    categorizedFiles.rendered.sort((a, b) => a.size - b.size);
+                    // Sort files by directory structure with README.md priority
+                    categorizedFiles.rendered = sortFilesByStructure(categorizedFiles.rendered);
                     
                     // Move excess files to a new "truncated" category
                     const truncatedFiles = categorizedFiles.rendered.splice(maxFiles);
@@ -2530,7 +2566,7 @@
         async function generateCXML(files) {
             let cxml = '<documents>\n';
             
-            // Use helper function to filter out failed files
+            // Use helper function to filter out failed files and sort by structure
             const availableFiles = files.filter(file => {
                 return file.content && 
                        !file.content.startsWith('[Error loading file:') && 
@@ -2538,8 +2574,11 @@
                        file.content !== '[Content not available]';
             });
             
-            for (let index = 0; index < availableFiles.length; index++) {
-                const file = availableFiles[index];
+            // Sort files with README.md first for better LLM context
+            const sortedFiles = sortFilesByStructure([...availableFiles]);
+            
+            for (let index = 0; index < sortedFiles.length; index++) {
+                const file = sortedFiles[index];
                 cxml += `<document index="${index + 1}">\n`;
                 cxml += `<source>${file.path}</source>\n`;
                 cxml += '<document_content>\n';
@@ -2987,27 +3026,27 @@
             backToTop.innerHTML = '<a href="#top" style="color: var(--accent-primary); font-weight: bold;">↑ Back to top</a>';
             fileTree.appendChild(backToTop);
             
-            // Group files by directory
+            // Sort files by structure with README.md first
+            const sortedFiles = sortFilesByStructure([...availableFiles]);
+            
+            // Group files by directory while maintaining sort order
             const filesByDir = {};
-            availableFiles.forEach(file => {
+            const dirOrder = [];
+            
+            sortedFiles.forEach(file => {
                 const parts = file.path.split('/');
                 const dir = parts.length > 1 ? parts.slice(0, -1).join('/') : '';
                 const filename = parts[parts.length - 1];
                 
                 if (!filesByDir[dir]) {
                     filesByDir[dir] = [];
+                    dirOrder.push(dir);
                 }
                 filesByDir[dir].push({ ...file, filename });
             });
             
-            // Sort directories
-            const sortedDirs = Object.keys(filesByDir).sort((a, b) => {
-                if (a === '') return -1; // Root files first
-                if (b === '') return 1;
-                return a.localeCompare(b);
-            });
-            
-            sortedDirs.forEach(dir => {
+            // Display files maintaining the sorted order
+            dirOrder.forEach(dir => {
                 // Add directory header if not root
                 if (dir !== '') {
                     const dirLi = document.createElement('li');
@@ -3018,8 +3057,8 @@
                     fileTree.appendChild(dirLi);
                 }
                 
-                // Add files in directory
-                filesByDir[dir].sort((a, b) => a.filename.localeCompare(b.filename)).forEach(file => {
+                // Add files in directory (already sorted)
+                filesByDir[dir].forEach(file => {
                     const li = document.createElement('li');
                     li.style.paddingLeft = dir === '' ? '0' : '1rem';
                     
@@ -3241,14 +3280,15 @@
             
             if (!repositoryData || !repositoryData.files) return;
             
-            // Use helper function to get available files
+            // Use helper function to get available files and sort them by structure
             const availableFiles = getAvailableFiles();
+            const sortedFiles = sortFilesByStructure([...availableFiles]);
             
-            // Calculate pagination based on available files
-            const totalFiles = availableFiles.length;
+            // Calculate pagination based on sorted files
+            const totalFiles = sortedFiles.length;
             const startIndex = (currentPage - 1) * filesPerPage;
             const endIndex = Math.min(startIndex + filesPerPage, totalFiles);
-            const filesToShow = availableFiles.slice(startIndex, endIndex);
+            const filesToShow = sortedFiles.slice(startIndex, endIndex);
             
             filesToShow.forEach((file, index) => {
                 const globalIndex = startIndex + index; // Global index across all files
@@ -4454,7 +4494,7 @@
                 const maxFiles = getFileLimit();
                 
                 if (totalFilesToProcess > maxFiles) {
-                    categorizedFiles.rendered.sort((a, b) => a.size - b.size);
+                    categorizedFiles.rendered = sortFilesByStructure(categorizedFiles.rendered);
                     const truncatedFiles = categorizedFiles.rendered.splice(maxFiles);
                     if (!categorizedFiles.truncated) categorizedFiles.truncated = [];
                     categorizedFiles.truncated.push(...truncatedFiles);
