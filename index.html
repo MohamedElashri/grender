@@ -1364,7 +1364,7 @@
                         • <strong>With GitHub token:</strong> Default limit is 200 files (higher rate limits available)
                     </div>
                     <div style="margin-bottom: 0.5rem;">
-                        • <strong>Custom limit:</strong> You can set any limit from 1 to 1000 files
+                        • <strong>Custom limit:</strong> You can set any limit from 1 to 2000 files
                     </div>
                     <div style="margin-bottom: 0.5rem;">
                         • Files are prioritized by size (smaller files first) to maximize content quality
@@ -1737,7 +1737,9 @@
         function updatePagination() {
             if (!repositoryData || !repositoryData.files) return;
             
-            const totalFiles = repositoryData.files.length;
+            // Use helper function to get available files
+            const availableFiles = getAvailableFiles();
+            const totalFiles = availableFiles.length;
             totalPages = Math.ceil(totalFiles / filesPerPage);
             
             // Get both top and bottom pagination elements
@@ -1933,8 +1935,9 @@
             const githubToken = document.getElementById('github-token').value.trim();
             
             // Check if user has specified a custom limit
-            if (fileLimitInput && fileLimitInput.value) {
-                const customLimit = parseInt(fileLimitInput.value);
+            if (fileLimitInput && fileLimitInput.value && fileLimitInput.value.trim()) {
+                const customLimit = parseInt(fileLimitInput.value.trim());
+                
                 if (!isNaN(customLimit) && customLimit > 0 && customLimit <= 1000) {
                     // Save to localStorage for persistence
                     localStorage.setItem('git-render-file-limit', customLimit.toString());
@@ -1944,6 +1947,23 @@
             
             // Return default limits based on token availability
             return githubToken ? 200 : 50;
+        }
+
+        // Helper function to get files that have successfully loaded content
+        function getAvailableFiles() {
+            if (!repositoryData || !repositoryData.files) return [];
+            
+            return repositoryData.files.filter(file => {
+                // Include files that:
+                // 1. Have content === null (not yet loaded, available for lazy loading)
+                // 2. Have actual content (successfully loaded)
+                // Exclude files that failed to load (have error messages)
+                return file.content === null || 
+                       (file.content && 
+                        !file.content.startsWith('[Error loading file:') && 
+                        !file.content.startsWith('Failed to load') && 
+                        file.content !== '[Content not available]');
+            });
         }
 
         // Load saved file limit from localStorage
@@ -2328,7 +2348,8 @@
                 // Use user-specified limit or defaults: 50 without token, 200 with token
                 const maxFiles = getFileLimit();
                 const githubToken = document.getElementById('github-token').value.trim();
-                const isCustomLimit = document.getElementById('file-limit').value.trim() !== '';
+                const fileLimitInput = document.getElementById('file-limit');
+                const isCustomLimit = fileLimitInput && fileLimitInput.value && fileLimitInput.value.trim() !== '';
                 
                 if (totalFilesToProcess > maxFiles) {
                     const limitType = isCustomLimit ? 'custom' : (githubToken ? 'token-default' : 'no-token-default');
@@ -2509,8 +2530,16 @@
         async function generateCXML(files) {
             let cxml = '<documents>\n';
             
-            for (let index = 0; index < files.length; index++) {
-                const file = files[index];
+            // Use helper function to filter out failed files
+            const availableFiles = files.filter(file => {
+                return file.content && 
+                       !file.content.startsWith('[Error loading file:') && 
+                       !file.content.startsWith('Failed to load') && 
+                       file.content !== '[Content not available]';
+            });
+            
+            for (let index = 0; index < availableFiles.length; index++) {
+                const file = availableFiles[index];
                 cxml += `<document index="${index + 1}">\n`;
                 cxml += `<source>${file.path}</source>\n`;
                 cxml += '<document_content>\n';
@@ -2522,11 +2551,13 @@
                         // Cache the content
                         filesContentCache.set(file.path, file.content);
                     } catch (error) {
-                        file.content = `[Error loading file: ${error.message}]`;
+                        // Skip files that fail to load
+                        console.warn(`Skipping file ${file.path} in CXML due to loading error:`, error);
+                        continue;
                     }
                 }
                 
-                cxml += file.content || '[Content not available]';
+                cxml += file.content;
                 cxml += '\n</document_content>\n';
                 cxml += '</document>\n';
             }
@@ -2866,6 +2897,9 @@
             // Enhanced statistics
             const totalFiles = repositoryData.allFiles ? repositoryData.allFiles.length : 0;
             const renderedCount = repositoryData.files ? repositoryData.files.length : 0;
+            const availableFiles = getAvailableFiles();
+            const successfullyLoaded = availableFiles.length;
+            const failedToLoad = renderedCount - successfullyLoaded;
             const skippedCount = totalFiles - renderedCount;
             
             const fileCountElement = document.getElementById('file-count');
@@ -2873,7 +2907,7 @@
             const mainLanguageElement = document.getElementById('main-language');
             
             if (fileCountElement) {
-                fileCountElement.textContent = `${renderedCount}/${totalFiles}`;
+                fileCountElement.textContent = `${successfullyLoaded}/${renderedCount}/${totalFiles}`;
             }
             if (totalSizeElement) {
                 totalSizeElement.textContent = formatBytes(repositoryData.totalSize || 0);
@@ -2885,8 +2919,13 @@
             // Add additional stats
             const statsContainer = document.querySelector('.repo-stats');
             if (statsContainer && repositoryData.repoInfo) {
+                let statusText = `Files: <strong>${successfullyLoaded}/${renderedCount}/${totalFiles}</strong>`;
+                if (failedToLoad > 0) {
+                    statusText += ` <span style="color: var(--text-muted);">(${failedToLoad} failed to load)</span>`;
+                }
+                
                 statsContainer.innerHTML = `
-                    <span class="stat">Files: <strong>${renderedCount}/${totalFiles}</strong></span>
+                    <span class="stat">${statusText}</span>
                     <span class="stat">Size: <strong>${formatBytes(repositoryData.totalSize || 0)}</strong></span>
                     <span class="stat">Language: <strong>${repositoryData.repoInfo.language || 'Mixed'}</strong></span>
                     <span class="stat">Skipped: <strong>${skippedCount}</strong></span>
@@ -2932,10 +2971,13 @@
             const fileTree = document.getElementById('file-tree');
             if (!fileTree || !repositoryData || !repositoryData.files) return;
             
+            // Use helper function to get available files
+            const availableFiles = getAvailableFiles();
+            
             // Update the sidebar header to show file count
             const sidebarHeader = fileTree.parentElement.querySelector('h3');
             if (sidebarHeader) {
-                sidebarHeader.innerHTML = `Files (${repositoryData.files.length}) <small style="color: var(--text-muted); font-weight: normal;">↕️ scroll</small>`;
+                sidebarHeader.innerHTML = `Files (${availableFiles.length}) <small style="color: var(--text-muted); font-weight: normal;">↕️ scroll</small>`;
             }
             
             fileTree.innerHTML = '';
@@ -2947,7 +2989,7 @@
             
             // Group files by directory
             const filesByDir = {};
-            repositoryData.files.forEach(file => {
+            availableFiles.forEach(file => {
                 const parts = file.path.split('/');
                 const dir = parts.length > 1 ? parts.slice(0, -1).join('/') : '';
                 const filename = parts[parts.length - 1];
@@ -3199,11 +3241,14 @@
             
             if (!repositoryData || !repositoryData.files) return;
             
-            // Calculate pagination
-            const totalFiles = repositoryData.files.length;
+            // Use helper function to get available files
+            const availableFiles = getAvailableFiles();
+            
+            // Calculate pagination based on available files
+            const totalFiles = availableFiles.length;
             const startIndex = (currentPage - 1) * filesPerPage;
             const endIndex = Math.min(startIndex + filesPerPage, totalFiles);
-            const filesToShow = repositoryData.files.slice(startIndex, endIndex);
+            const filesToShow = availableFiles.slice(startIndex, endIndex);
             
             filesToShow.forEach((file, index) => {
                 const globalIndex = startIndex + index; // Global index across all files
