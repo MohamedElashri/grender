@@ -2800,13 +2800,76 @@
             // console.log('Example repositories you can try:', exampleRepos);
         });
 
-        // Smooth scrolling for anchor links
+        // Function to find which page a file is on
+        function findPageForFile(filePath) {
+            if (!repositoryData || !repositoryData.files) return null;
+            
+            // Use helper function to get available files and sort them by structure
+            const availableFiles = getAvailableFiles();
+            const sortedFiles = sortFilesByStructure([...availableFiles]);
+            
+            // Find the index of the file in the sorted array
+            const fileIndex = sortedFiles.findIndex(file => file.path === filePath);
+            if (fileIndex === -1) return null;
+            
+            // Calculate which page this file is on
+            const pageNumber = Math.floor(fileIndex / filesPerPage) + 1;
+            return pageNumber;
+        }
+
+        // Function to navigate to a file (with page navigation if needed)
+        function navigateToFile(filePath) {
+            const targetPage = findPageForFile(filePath);
+            if (!targetPage) return false;
+            
+            // If the file is on a different page, navigate to that page first
+            if (targetPage !== currentPage) {
+                currentPage = targetPage;
+                generateEnhancedFileSections();
+                updatePagination();
+                
+                // After the page updates, scroll to the file with a slight delay
+                setTimeout(() => {
+                    const fileId = filePath.replace(/[^a-zA-Z0-9-_]/g, '-');
+                    const target = document.querySelector(`#file-${fileId}`);
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 100);
+            } else {
+                // File is on current page, just scroll to it
+                const fileId = filePath.replace(/[^a-zA-Z0-9-_]/g, '-');
+                const target = document.querySelector(`#file-${fileId}`);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+            return true;
+        }
+
+        // Smooth scrolling for anchor links with page navigation
         document.addEventListener('click', function(e) {
             if (e.target.tagName === 'A' && e.target.getAttribute('href').startsWith('#file-')) {
                 e.preventDefault();
-                const target = document.querySelector(e.target.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // Extract file path from the link's title attribute or find it from the file list
+                const fileId = e.target.getAttribute('href').substring(6); // Remove '#file-' prefix
+                
+                // Find the file path by looking through available files
+                const availableFiles = getAvailableFiles();
+                const targetFile = availableFiles.find(file => {
+                    const normalizedPath = file.path.replace(/[^a-zA-Z0-9-_]/g, '-');
+                    return normalizedPath === fileId;
+                });
+                
+                if (targetFile) {
+                    navigateToFile(targetFile.path);
+                } else {
+                    // Fallback to original behavior if file not found
+                    const target = document.querySelector(e.target.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
                 }
             }
         });
