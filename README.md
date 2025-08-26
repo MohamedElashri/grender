@@ -11,3 +11,8 @@ Git Render displays any public GitHub repository in browser with syntax highligh
 - Two viewing modes:
   - **Human view**: Browse files with file tree navigation and pagination
   - **LLM view**: Repository formatted as structured text for AI analysis 
+
+## Demo
+
+
+I host a demo instance of Git Render at [Git Render](https://melashri.net/grender). You can try it out with any public GitHub repository URL.
