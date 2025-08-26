@@ -899,6 +899,11 @@
             gap: 1rem;
         }
 
+        /* Top pagination has less margin */
+        #pagination-container-top {
+            margin: 1rem 0 2rem 0;
+        }
+
         .pagination-info {
             color: var(--text-secondary);
             font-size: 0.9rem;
@@ -1042,6 +1047,12 @@
                             <option value="100">100</option>
                             <option value="-1">All</option>
                         </select>
+                    </div>
+                    
+                    <!-- Top Pagination -->
+                    <div class="pagination-container" id="pagination-container-top" style="display: none;">
+                        <div class="pagination-info" id="pagination-info-top"></div>
+                        <div class="pagination" id="pagination-top"></div>
                     </div>
                     
                     <div class="content-layout">
@@ -1296,93 +1307,110 @@
             const totalFiles = repositoryData.files.length;
             totalPages = Math.ceil(totalFiles / filesPerPage);
             
-            const paginationContainer = document.getElementById('pagination-container');
-            const paginationInfo = document.getElementById('pagination-info');
-            const pagination = document.getElementById('pagination');
+            // Get both top and bottom pagination elements
+            const paginationContainers = [
+                document.getElementById('pagination-container-top'),
+                document.getElementById('pagination-container')
+            ];
+            const paginationInfos = [
+                document.getElementById('pagination-info-top'),
+                document.getElementById('pagination-info')
+            ];
+            const paginations = [
+                document.getElementById('pagination-top'),
+                document.getElementById('pagination')
+            ];
             
-            if (!paginationContainer || !paginationInfo || !pagination) {
-                console.warn('Pagination elements not found');
-                return;
-            }
-            
-            // Show/hide pagination based on whether it's needed
-            if (totalPages <= 1) {
-                paginationContainer.style.display = 'none';
-                return;
-            } else {
-                paginationContainer.style.display = 'flex';
-            }
-            
-            // Update pagination info
-            const startFile = (currentPage - 1) * filesPerPage + 1;
-            const endFile = Math.min(currentPage * filesPerPage, totalFiles);
-            paginationInfo.textContent = `Showing ${startFile}-${endFile} of ${totalFiles} files`;
-            
-            // Generate pagination buttons
-            pagination.innerHTML = '';
-            
-            // Previous button
-            const prevBtn = document.createElement('button');
-            prevBtn.textContent = '‹ Previous';
-            prevBtn.disabled = currentPage === 1;
-            prevBtn.onclick = () => goToPage(currentPage - 1);
-            pagination.appendChild(prevBtn);
-            
-            // Page numbers
-            const maxVisiblePages = window.innerWidth < 768 ? 3 : 7; // Fewer pages on mobile
-            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-            
-            // Adjust start page if we're near the end
-            if (endPage - startPage < maxVisiblePages - 1) {
-                startPage = Math.max(1, endPage - maxVisiblePages + 1);
-            }
-            
-            // First page and ellipsis
-            if (startPage > 1) {
-                const firstBtn = document.createElement('button');
-                firstBtn.textContent = '1';
-                firstBtn.onclick = () => goToPage(1);
-                pagination.appendChild(firstBtn);
+            // Process both top and bottom pagination
+            for (let i = 0; i < 2; i++) {
+                const paginationContainer = paginationContainers[i];
+                const paginationInfo = paginationInfos[i];
+                const pagination = paginations[i];
                 
-                if (startPage > 2) {
-                    const ellipsis = document.createElement('span');
-                    ellipsis.className = 'ellipsis';
-                    ellipsis.textContent = '...';
-                    pagination.appendChild(ellipsis);
-                }
-            }
-            
-            // Page number buttons
-            for (let i = startPage; i <= endPage; i++) {
-                const pageBtn = document.createElement('button');
-                pageBtn.textContent = i.toString();
-                pageBtn.className = i === currentPage ? 'active' : '';
-                pageBtn.onclick = () => goToPage(i);
-                pagination.appendChild(pageBtn);
-            }
-            
-            // Last page and ellipsis
-            if (endPage < totalPages) {
-                if (endPage < totalPages - 1) {
-                    const ellipsis = document.createElement('span');
-                    ellipsis.className = 'ellipsis';
-                    ellipsis.textContent = '...';
-                    pagination.appendChild(ellipsis);
+                if (!paginationContainer || !paginationInfo || !pagination) {
+                    console.warn(`Pagination elements not found for index ${i}`);
+                    continue;
                 }
                 
-                const lastBtn = document.createElement('button');
-                lastBtn.textContent = totalPages.toString();
-                lastBtn.onclick = () => goToPage(totalPages);
-                pagination.appendChild(lastBtn);
+                // Show/hide pagination based on whether it's needed
+                if (totalPages <= 1) {
+                    paginationContainer.style.display = 'none';
+                    continue;
+                } else {
+                    paginationContainer.style.display = 'flex';
+                }
+                
+                // Update pagination info
+                const startFile = (currentPage - 1) * filesPerPage + 1;
+                const endFile = Math.min(currentPage * filesPerPage, totalFiles);
+                paginationInfo.textContent = `Showing ${startFile}-${endFile} of ${totalFiles} files`;
+                
+                // Generate pagination buttons
+                pagination.innerHTML = '';
+                
+                // Previous button
+                const prevBtn = document.createElement('button');
+                prevBtn.textContent = '‹ Previous';
+                prevBtn.disabled = currentPage === 1;
+                prevBtn.onclick = () => goToPage(currentPage - 1);
+                pagination.appendChild(prevBtn);
+                
+                // Page numbers
+                const maxVisiblePages = window.innerWidth < 768 ? 3 : 7; // Fewer pages on mobile
+                let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                
+                // Adjust start page if we're near the end
+                if (endPage - startPage < maxVisiblePages - 1) {
+                    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                }
+                
+                // First page and ellipsis
+                if (startPage > 1) {
+                    const firstBtn = document.createElement('button');
+                    firstBtn.textContent = '1';
+                    firstBtn.onclick = () => goToPage(1);
+                    pagination.appendChild(firstBtn);
+                    
+                    if (startPage > 2) {
+                        const ellipsis = document.createElement('span');
+                        ellipsis.className = 'ellipsis';
+                        ellipsis.textContent = '...';
+                        pagination.appendChild(ellipsis);
+                    }
+                }
+                
+                // Page number buttons
+                for (let pageNum = startPage; pageNum <= endPage; pageNum++) {
+                    const pageBtn = document.createElement('button');
+                    pageBtn.textContent = pageNum.toString();
+                    pageBtn.className = pageNum === currentPage ? 'active' : '';
+                    pageBtn.onclick = () => goToPage(pageNum);
+                    pagination.appendChild(pageBtn);
+                }
+                
+                // Last page and ellipsis
+                if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) {
+                        const ellipsis = document.createElement('span');
+                        ellipsis.className = 'ellipsis';
+                        ellipsis.textContent = '...';
+                        pagination.appendChild(ellipsis);
+                    }
+                    
+                    const lastBtn = document.createElement('button');
+                    lastBtn.textContent = totalPages.toString();
+                    lastBtn.onclick = () => goToPage(totalPages);
+                    pagination.appendChild(lastBtn);
+                }
+                
+                // Next button
+                const nextBtn = document.createElement('button');
+                nextBtn.textContent = 'Next ›';
+                nextBtn.disabled = currentPage === totalPages;
+                nextBtn.onclick = () => goToPage(currentPage + 1);
+                pagination.appendChild(nextBtn);
             }
-            
-            // Next button
-            const nextBtn = document.createElement('button');
-            nextBtn.textContent = 'Next ›';
-            nextBtn.disabled = currentPage === totalPages;
-            nextBtn.onclick = () => goToPage(currentPage + 1);
-            pagination.appendChild(nextBtn);
         }
 
         // Responsive files per page adjustment
