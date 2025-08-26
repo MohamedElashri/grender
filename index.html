@@ -2566,39 +2566,61 @@
         async function generateCXML(files) {
             let cxml = '<documents>\n';
             
-            // Use helper function to filter out failed files and sort by structure
-            const availableFiles = files.filter(file => {
-                return file.content && 
-                       !file.content.startsWith('[Error loading file:') && 
-                       !file.content.startsWith('Failed to load') && 
-                       file.content !== '[Content not available]';
-            });
+            // Get available files and sort them properly
+            const availableFiles = getAvailableFiles();
+            if (!availableFiles || availableFiles.length === 0) {
+                console.warn('No available files for generateCXML');
+                return '<documents>\n</documents>';
+            }
             
             // Sort files with README.md first for better LLM context
             const sortedFiles = sortFilesByStructure([...availableFiles]);
             
-            for (let index = 0; index < sortedFiles.length; index++) {
-                const file = sortedFiles[index];
-                cxml += `<document index="${index + 1}">\n`;
+            let docIndex = 1;
+            for (const file of sortedFiles) {
+                // Skip binary or ignored files
+                const category = categorizeFile(file.path, file.size || 0);
+                if (category.category === 'ignored' || category.category === 'binary') {
+                    continue;
+                }
+                
+                cxml += `<document index="${docIndex}">\n`;
                 cxml += `<source>${file.path}</source>\n`;
                 cxml += '<document_content>\n';
                 
-                // Load content if not already loaded
-                if (!file.content && file.sha) {
+                // Try to get content
+                if (file.content && 
+                    !file.content.startsWith('[Error loading file:') && 
+                    !file.content.startsWith('Failed to load') && 
+                    file.content !== '[Content not available]') {
+                    cxml += file.content;
+                } else if (file.sha) {
                     try {
-                        file.content = await fetchSingleFileContent(file);
-                        // Cache the content
-                        filesContentCache.set(file.path, file.content);
+                        const content = await fetchSingleFileContent(file);
+                        if (content && 
+                            !content.startsWith('[Error loading file:') && 
+                            !content.startsWith('Failed to load') && 
+                            content !== '[Content not available]') {
+                            cxml += content;
+                            // Cache the content
+                            filesContentCache.set(file.path, content);
+                        } else {
+                            // Skip files with error content
+                            continue;
+                        }
                     } catch (error) {
                         // Skip files that fail to load
-                        console.warn(`Skipping file ${file.path} in CXML due to loading error:`, error);
                         continue;
                     }
+                } else {
+                    // Skip files without content or sha
+                    continue;
                 }
                 
-                cxml += file.content;
                 cxml += '\n</document_content>\n';
                 cxml += '</document>\n';
+                
+                docIndex++;
             }
             
             cxml += '</documents>';
@@ -3051,7 +3073,7 @@
             addSkippedFilesSummary();
             
             // Generate CXML for LLM view
-            if (repositoryData.files) {
+            if (repositoryData && repositoryData.files) {
                 // Generate CXML asynchronously and update when ready
                 generateCXML(repositoryData.files).then(cxml => {
                     const llmTextarea = document.getElementById('llm-textarea');
