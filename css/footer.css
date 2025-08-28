@@ -1,0 +1,38 @@
+/* Footer styles */
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-primary);
+    padding: 1rem 2rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    transform: translateY(100%); /* Hidden by default */
+    transition: transform 0.3s ease-in-out;
+    z-index: 100;
+}
+
+.footer.show {
+    transform: translateY(0); /* Show when near bottom */
+}
+
+.footer a {
+    color: var(--accent-primary);
+    text-decoration: none;
+    margin-left: 0.5rem;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
+
+.github-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-left: 0.5rem;
+    vertical-align: text-bottom;
+}

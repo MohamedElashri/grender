@@ -1,0 +1,130 @@
+/* File display and content styles */
+.files-container {
+    min-width: 0; /* Allow container to shrink */
+    overflow-x: hidden; /* Prevent horizontal overflow */
+}
+
+.file-section {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    min-width: 0; /* Allow sections to shrink */
+    max-width: 100%; /* Prevent overflow */
+}
+
+.file-header {
+    background-color: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-primary);
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.file-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.file-size {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.file-content {
+    padding: 0;
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+/* Add padding for markdown content specifically */
+.file-content .markdown-content {
+    padding: 1rem 1.5rem;
+}
+
+/* Add minimal padding for non-code content */
+.file-content > *:not(.hljs-container):not(pre):not(.code-block-wrapper) {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.file-content pre {
+    margin: 0;
+    padding: 1rem;
+    overflow-x: auto;
+    background: transparent;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    max-width: 100%;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+.file-content code {
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    display: block;
+    overflow-x: auto;
+}
+
+/* Ensure code blocks don't overflow */
+.hljs {
+    overflow-x: auto !important;
+    max-width: 100% !important;
+    word-wrap: break-word !important;
+    white-space: pre-wrap !important;
+}
+
+.hljs-container {
+    overflow-x: auto;
+    max-width: 100%;
+    background: var(--bg-tertiary);
+    border-radius: 0 0 6px 6px;
+    margin: 0;
+}
+
+/* Code block wrappers with language headers */
+.code-block-wrapper {
+    margin: 1rem 0;
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    background: var(--bg-secondary);
+}
+
+.code-block-header {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-primary);
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    border-radius: 6px 6px 0 0;
+}
+
+.code-language {
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-weight: 500;
+    text-transform: lowercase;
+}
+
+.code-block-wrapper .hljs-container {
+    border-radius: 0 0 6px 6px;
+    border: none;
+    margin: 0;
+}
+
+/* Better handling of long lines in code */
+.file-content .hljs {
+    tab-size: 4;
+    -moz-tab-size: 4;
+}
+
+/* Ensure proper line breaking for long URLs and strings */
+.hljs .hljs-string,
+.hljs .hljs-comment {
+    word-break: break-word;
+    white-space: pre-wrap;
+}

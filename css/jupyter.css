@@ -1,0 +1,42 @@
+/* Jupyter Notebook specific styles */
+.jupyter-notebook {
+    position: relative;
+}
+
+.notebook-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+}
+
+.jupyter-notebook .code-block-wrapper {
+    position: relative;
+}
+
+.jupyter-notebook .code-block-wrapper::before {
+    content: "📱 Cell";
+    position: absolute;
+    top: 0.5rem;
+    right: 1rem;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    background: var(--bg-secondary);
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    z-index: 1;
+}
+
+.jupyter-notebook code:not(.hljs) {
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-secondary);
+}
+
+.jupyter-notebook blockquote {
+    border-left-color: #ff6b35;
+    background-color: rgba(255, 107, 53, 0.1);
+}
+
+.jupyter-notebook h1, .jupyter-notebook h2, .jupyter-notebook h3 {
+    border-bottom-color: var(--border-secondary);
+}
